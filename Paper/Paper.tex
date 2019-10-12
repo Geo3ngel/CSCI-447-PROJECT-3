@@ -1,0 +1,129 @@
+% Template taken from https://www.sharelatex.com/templates/journals/template-for-the-journal-of-machine-learning-research-jmlr
+
+\documentclass[twoside,11pt]{article}
+
+% Any additional packages needed should be included after jmlr2e.
+% Note that jmlr2e.sty includes epsfig, amssymb, natbib and graphicx,
+% and defines many common macros, such as 'proof' and 'example'.
+%
+% It also sets the bibliographystyle to plainnat; for more information on
+% natbib citation styles, see the natbib documentation, a copy of which
+% is archived at http://www.jmlr.org/format/natbib.pdf
+
+\usepackage{jmlr2e}
+\usepackage{amsmath}
+% Definitions of handy macros can go here
+
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
+
+% Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
+
+\jmlrheading{1}{2019}{1-10}{9/19}{9/19}{George Engel, Troy Oster, Dana Parker, Henry Soule}
+
+% Short headings should be running head and authors last names
+
+\ShortHeadings{CSCI 447: Project 1}{Engel, Oster, Parker, Soule}
+\firstpageno{1}
+
+\begin{document}
+
+\title{CSCI 447: Project 1}
+
+\author{\name George Engel \email GeoEngel.z@gmail.com \\
+       \addr Department of Engineering\\
+       Montana State University\\
+       Bozemane, MT 59715, USA
+       \AND
+       \name Troy Oster \email toster1011@gmail.com \\
+       \addr Department of Engineering\\
+       Montana State University\\
+       Bozeman, MT 59715, USA
+       \AND
+       \name Dana Parker \email danaharmonparker@gmail.com \\
+       \addr Department of Engineering\\
+       Montana State University\\
+       Bozeman, MT 59715, USA
+       \AND
+       \name Henry Soule \email hsoule427@gmail.com \\
+       \addr Department of Engineering\\
+       Montana State University\\
+       Bozeman, MT 59715, USA}
+
+\editor{Engel et al.}
+
+\maketitle
+
+\begin{abstract}%   <- trailing '%' for backward compatibility of .sty file
+
+-Give general idea of what we are doing
+-Summarize our results/findings here too
+
+\end{abstract}
+
+\begin{keywords}
+    TODO: Enter keywords for assignment.
+    Neural Networks, Machine Learning
+%   
+\end{keywords}
+
+\section{Introduction}
+
+
+\section{Problem Statement}
+TODO: State what we want to do/how we plan to do it
+
+
+
+\section{Hypotheses}
+
+TODO: Add a general hypothesis, and then go into detail for each dataset.
+
+\subsection{Abalone}
+
+\subsection{Car}
+
+\subsection{forestfires}
+
+\subsection{machine}
+
+\subsection{segmentation}
+
+\section{The Algorithms}
+TODO: Add description of the algorithm used, proper credits to an academic article cited in line, and how we went implemented this algorithm.
+
+\section{Our Approach}
+\subsection{Example}
+\subsection{Example}
+\subsection{Example}
+
+% \subsection{Shuffling/Applying Noise}
+
+% In addition to implementing our prediction algorithm for the plain version of each data set, we also ran it with a 10\% noise modifier applied to the training data set in order to try and grasp how noise might affect the naive bayes machine learning algorithm. 
+
+% We implemented our prediction algorithm on the original version of each data set, and also introduced noise to each data set by randomly selecting 10\% of each data set and the shuffling attribute values. We then ran our algorithm on these shuffled versions of each data set.
+
+\section{Results}
+General summary of results goes here
+
+\section{Conclusions}
+
+TODO: Add general conclusion here
+
+\subsection{Abalone}
+
+\subsection{Car}
+
+\subsection{Forest fires}
+
+\subsection{Machine}
+
+\subsection{Segmentation}
+
+
+% Acknowledgements should go at the end, before appendices and references
+\acks{}
+
+% References go here (Don't forget inline comments!)
+
+\end{document}
