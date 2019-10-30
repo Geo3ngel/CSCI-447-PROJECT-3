@@ -175,11 +175,11 @@ class knn:
             #Check performance at end of each scan
             past_performance = current_performance
             current_performance = self.get_performance(edited_data, validation_data)
-            print("PAST PERFORMANCE:    ", past_performance)
-            print("CURRENT PERFORMANCE: ", current_performance)
-            print("LOOP COUNT: ", loop_count)
+            # print("PAST PERFORMANCE:    ", past_performance)
+            # print("CURRENT PERFORMANCE: ", current_performance)
+            # print("LOOP COUNT: ", loop_count)
             loop_count += 1
-            print('--------------------------------------------')
+            # print('--------------------------------------------')
             if current_performance < past_performance or loop_count >= 10:
                 performance_improving = False
         # END WHILE LOOP
