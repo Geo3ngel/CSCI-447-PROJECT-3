@@ -2,6 +2,7 @@
 
 # IMPORTS
 import numpy as np
+import math
 
 ## Quadratic Costs: returns the cost associated with the given output & desired output
 @staticmethod
@@ -34,5 +35,17 @@ def get_MSE():
 # Generates a sigmoid value given the 
 def calc_sigmoid(z):
     return 1.0/(1.0+np.exp(-z))
+
+# Euclidean distance function
+# TODO add a way to get iterate over only the classification columns
+def euc_dist(data_instance_a, data_instance_b):
+    distance = 0
+    for idx in range(len(data_instance_a)):
+        if type(data_instance_a[idx]) == str:
+            if data_instance_a[idx] != data_instance_b[idx]:
+                distance += 1
+        else:
+            distance += pow((data_instance_a[idx] - data_instance_b[idx]), 2)
+    return math.sqrt(distance)
 
 # (1.0/(1.0+np.exp(-z)))*(1-sigmoid(z))

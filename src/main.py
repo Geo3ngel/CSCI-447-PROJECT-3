@@ -8,6 +8,8 @@ import process_data
 from knn import knn
 from kcluster import kcluster
 from path_manager import pathManager as path_manager
+import numpy as np
+import Cost_Functions as cf
 
 def select_db(databases):  
     if len(databases) == 0:
@@ -90,13 +92,15 @@ for database in selected_dbs:
     cnn = knn.condensed_nn(db.get_data())
 
     # Run edited nearest neighbor
-    td = db.get_data()[0:int(len(db.get_data()) * 0.9)] # First 90% of data
-    vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())] # Last 10% of data
+    # Training data, first 90%
+    td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
+    # Validation Data, last 10%
+    vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
     enn = knn.edited_knn(td, vd)
+    rbf = RBF(100, 1)
+    rbf.predict(db.get_data(), enn)
     
-    print('ENN LENGTH: ', len(enn))
-    print('CNN LENGTH: ', len(cnn))
-    # rbf.predict(db.get_data(), knn.condensed_nn)
+    
 
 
 

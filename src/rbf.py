@@ -1,8 +1,21 @@
 import numpy as np
+import Cost_Functions as cf
 
+'''
+@param x    data example
+@param c    cluster center
+@param s    standard deviation
+'''
+def gaussian(x, c, s):
+    return np.exp((-1 / (2*(s**2))) * (cf.euc_dist(x,c)**2))
 
-def gaussian(x,c,s):
-    return np.exp(-1 / (2 * s**2) * (x-c)**2)
+'''
+@param c    the set of centers
+@brief      return a set of std deviations for each center/neuron
+'''
+def get_std_devs(c):
+    return [sum([cf.euc_dist(c1,c2) for c2 in c]) / len(c) for c1 in c]
+
 
 
 class RBF():
@@ -15,16 +28,17 @@ class RBF():
     '''
     @brief      Fit the model
     @param X    The dataset
-    @param cf   Reference to our chosen cluster function
     '''
-    def predict(self, X, cf):
-        # Get cluster centers
-        self.centers = cf(X)
-        for c in self.centers:
-            print(c)
+    def predict(self, X, centers):
+        # Compute standard deviations
+        std_devs = get_std_devs(centers)
 
-        # for epoch in range(self.epochs):
-        #     for row in X:
-        #         # Build array of gaussians for each center
-        #         g = [gaussian(row, c, s) for c in self.centers]
+        for epoch in range(self.epochs):
+            for row in X:
+                # Build array of gaussians for each center
+                g = [gaussian(row, c, s) for c,s in zip(centers, std_devs)]
+                print("GAUSSIANS:")
+                print(g)
+
+
 
