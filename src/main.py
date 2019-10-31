@@ -87,17 +87,17 @@ selected_dbs = select_db(pm.find_folders(pm.get_databases_dir()))
 
 for database in selected_dbs:
     db = prepare_db(database, pm)
-    knn = knn(100, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
+    k_nn = knn(100, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
     # Run condensed nearest neighbor
-    cnn = knn.condensed_nn(db.get_data())
-
+    cnn = k_nn.condensed_nn(db.get_data())
     # Run edited nearest neighbor
     # Training data, first 90%
     td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
     # Validation Data, last 10%
     vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
-    enn = knn.edited_knn(td, vd)
-    rbf = RBF(100, 1)
+    enn = k_nn.edited_knn(td, vd)
+    # Run data thru rbf net
+    rbf = RBF(len(enn), 7, 1)
     rbf.predict(db.get_data(), enn)
     
     

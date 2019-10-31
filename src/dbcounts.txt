@@ -1,0 +1,37 @@
+Running for all Databases.
+CURRENT DATABASE:  abalone
+Database initialized.
+DATABASE LENGTH:  4177
+CNN COUNT:  3778
+ENN COUNT:  1112
+------------------------------------------
+CURRENT DATABASE:  car
+Database initialized.
+DATABASE LENGTH:  1728
+CNN COUNT:  1728
+ENN COUNT:  519
+------------------------------------------
+CURRENT DATABASE:  forestfires
+Database initialized.
+DATABASE LENGTH:  517
+CNN COUNT:  513
+ENN COUNT:  230
+------------------------------------------
+CURRENT DATABASE:  machine
+Database initialized.
+DATABASE LENGTH:  209
+CNN COUNT:  172
+ENN COUNT:  1
+------------------------------------------
+CURRENT DATABASE:  segmentation
+Database initialized.
+DATABASE LENGTH:  210
+CNN COUNT:  146
+ENN COUNT:  27
+------------------------------------------
+CURRENT DATABASE:  wine
+Database initialized.
+DATABASE LENGTH:  178
+CNN COUNT:  33
+ENN COUNT:  2
+------------------------------------------

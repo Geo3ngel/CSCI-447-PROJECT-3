@@ -18,12 +18,17 @@ def get_std_devs(c):
 
 
 
+'''
+@param k        the number of centers/hidden layer nodes
+@param o        the number of output nodes
+@param epochs   the number of epochs to run for
+'''
 class RBF():
-    def __init__(self, k, epochs):
+    def __init__(self, k, o, epochs):
         self.k = k
         self.epochs = epochs
         # Initialize matrix of weights
-        self.weights = [np.random.rand(k) for i in range(k)]
+        self.weights = [np.random.rand(k) for i in range(o)]
     
     '''
     @brief      Fit the model
@@ -35,10 +40,18 @@ class RBF():
 
         for epoch in range(self.epochs):
             for row in X:
+                print("ROW: ", row)
                 # Build array of gaussians for each center
-                g = [gaussian(row, c, s) for c,s in zip(centers, std_devs)]
-                print("GAUSSIANS:")
-                print(g)
+                g = np.array([gaussian(row, c, s) for c,s in zip(centers, std_devs)])
+                # Predict the class
+                output_scores = [g.T.dot(self.weights[i]) for i in range(len(self.weights))]
+                print('OUTPUT SCORES: ', output_scores)
+                F = max(output_scores)
+                print("F: ", F)
+
+    
+
+                
 
 
 
