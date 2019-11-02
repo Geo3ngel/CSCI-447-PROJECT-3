@@ -32,10 +32,6 @@ def get_MSE():
 
 ## General Utility
 
-# Generates a sigmoid value given the 
-def calc_sigmoid(z):
-    return 1.0/(1.0+np.exp(-z))
-
 # Euclidean distance function
 # TODO add a way to get iterate over only the classification columns
 def euc_dist(data_instance_a, data_instance_b):
