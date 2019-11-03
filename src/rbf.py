@@ -31,10 +31,12 @@ class RBF():
         self.weights = [np.random.rand(k) for i in range(o)]
     
     '''
-    @brief      Fit the model
-    @param X    The dataset
+    @brief              Fit the model
+    @param X            The dataset
+    @param y            The correct classifacation for each data example
+    @param classes      The set of possible classes
     '''
-    def predict(self, X, centers):
+    def fit(self, X, centers, y, classes=[]):
         # Compute standard deviations
         std_devs = get_std_devs(centers)
 
@@ -45,9 +47,14 @@ class RBF():
                 g = np.array([gaussian(row, c, s) for c,s in zip(centers, std_devs)])
                 # Predict the class
                 output_scores = [g.T.dot(self.weights[i]) for i in range(len(self.weights))]
-                print('OUTPUT SCORES: ', output_scores)
+                # print('OUTPUT SCORES: ', output_scores)
                 F = max(output_scores)
-                print("F: ", F)
+                # print("F: ", F)
+                # Compute the loss (for classification, use 0-1?)
+                C = 0 if F == y[i] else 1
+                
+
+
 
     
 

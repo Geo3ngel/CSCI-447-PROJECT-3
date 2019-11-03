@@ -98,7 +98,13 @@ for database in selected_dbs:
     enn = k_nn.edited_knn(td, vd)
     # Run data thru rbf net
     rbf = RBF(len(enn), 7, 1)
-    rbf.predict(db.get_data(), enn)
+    
+    # Hardcoding the classes for now
+    #TODO implement a way to get classes thru database.py
+    classes = ['BRICKFACE', 'SKY', 'FOLIAGE', 'CEMENT', 'WINDOW', 'PATH', 'GRASS']
+    # get column vector storing correct classifications of each row
+    y = np.array(db.get_data())[:,db.get_classifier_col()]
+    rbf.fit(db.get_data(), enn, y, classes)
     
     
 
