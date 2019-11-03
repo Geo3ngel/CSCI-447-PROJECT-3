@@ -3,13 +3,23 @@
 @authors     George Engel, Troy Oster, Dana Parker, Henry Soule
 @brief       The file that runs the program
 """
-from rbf import RBF
+
+# -------------------------------------------------------------
+# Third-party imports
+
+import numpy as np
+
+# -------------------------------------------------------------
+# Custom imports
+
 import process_data
+import Cost_Functions as cf
+from rbf import RBF
 from knn import knn
 from kcluster import kcluster
 from path_manager import pathManager as path_manager
-import numpy as np
-import Cost_Functions as cf
+
+# -------------------------------------------------------------
 
 def select_db(databases):  
     if len(databases) == 0:
@@ -35,6 +45,7 @@ def select_db(databases):
             print(db, "is an invalid entry. Try again.")
     return chosen_dbs
 
+# -------------------------------------------------------------
 
 def prepare_db(database, pm):
     # Sets the selected database folder
@@ -67,6 +78,7 @@ def prepare_db(database, pm):
     
     return db
 
+# -------------------------------------------------------------
 # Cleaner print outs for the sake of my sanity.
 def print_db(db):
     if len(db) < 1:
@@ -75,42 +87,28 @@ def print_db(db):
         for row in db:
             print(row)
 
+# -------------------------------------------------------------
 
-'''
------------------------------------------------
-Main Execution
------------------------------------------------
-'''
+def main():
+    pm = path_manager()
+    selected_dbs = select_db(pm.find_folders(pm.get_databases_dir()))
 
-pm = path_manager()
-selected_dbs = select_db(pm.find_folders(pm.get_databases_dir()))
-
-for database in selected_dbs:
-    db = prepare_db(database, pm)
-    k_nn = knn(100, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
-    # Run condensed nearest neighbor
-    cnn = k_nn.condensed_nn(db.get_data())
-    # Run edited nearest neighbor
-    # Training data, first 90%
-    td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
-    # Validation Data, last 10%
-    vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
-    enn = k_nn.edited_knn(td, vd)
-    # Run data thru rbf net
-    rbf = RBF(len(enn), 7, 1)
+    for database in selected_dbs:
+        db = prepare_db(database, pm)
+        k_nn = knn(100, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
+        # Run condensed nearest neighbor
+        cnn = k_nn.condensed_nn(db.get_data())
+        # Run edited nearest neighbor
+        # Training data, first 90%
+        td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
+        # Validation Data, last 10%
+        vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
+        enn = k_nn.edited_knn(td, vd)
+        # Run data thru rbf net
+        rbf = RBF(len(enn), 7, 1)
+        rbf.predict(db.get_data(), enn)
     
-    # Hardcoding the classes for now
-    #TODO implement a way to get classes thru database.py
-    classes = ['BRICKFACE', 'SKY', 'FOLIAGE', 'CEMENT', 'WINDOW', 'PATH', 'GRASS']
-    # get column vector storing correct classifications of each row
-    y = np.array(db.get_data())[:,db.get_classifier_col()]
-    rbf.fit(db.get_data(), enn, y, classes)
-    
-    
+# -------------------------------------------------------------
 
-
-
-
-
-
-
+if __name__ == '__main__':
+    main()
