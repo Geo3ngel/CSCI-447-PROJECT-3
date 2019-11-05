@@ -18,6 +18,7 @@ def get_std_devs(c):
 
 
 
+
 '''
 @param k        the number of centers/hidden layer nodes
 @param o        the number of output nodes
@@ -28,9 +29,30 @@ class RBF():
         self.k = k
         self.epochs = epochs
         # Initialize matrix of weights
-        self.weights = [np.random.rand(k) for i in range(o)]
+        self.weights = np.array([np.random.rand(k) for i in range(o)])
         self.learn_rate = 0.1
         self.alpha = 0.5
+    
+    '''
+    @param activations      the array of activations for this datapoint
+    @param output_scores    the array of output scores
+    @param F                the predicted class/regression value
+    @param type             the type of dataset (classification/regression)
+    @param y                the correct class/regression value
+    @brief                  perform backprop
+    '''
+    def back_prop(self, activations, output_scores, F, type, y, classes=[]):
+        if type == "classification":
+            correct_probs = np.array([1 if c == y else 0 for c in classes])
+            errors = correct_probs - output_scores
+            # print("Activations: ", activations)
+            # print("Output Scores: ", output_scores)
+            # print("Weights: ", self.weights)
+            # print("Errors: ", errors)
+            for w,a in zip(self.weights.T, activations):
+                w = w - self.learn_rate * errors * a
+        else:
+            pass
     
     '''
     @brief              Fit the model
@@ -42,34 +64,23 @@ class RBF():
     def fit(self, X, centers, y, type, classes=[]):
         # Compute standard deviations
         std_devs = get_std_devs(centers)
-
         for epoch in range(self.epochs):
             print("EPOCH: ", epoch)
             for i in range(len(X)):
                 # Build array of gaussians for each center
                 g = np.array([gaussian(X[i], c, s) for c,s in zip(centers, std_devs)])
-                # Predict the class
-                output_scores = [g.T.dot(self.weights[i]) for i in range(len(self.weights))]
-                # print('OUTPUT SCORES: ', output_scores)
-                F = max(output_scores) if type == 'regression' else output_scores.index(max(output_scores))
-                # print("F = ", F)
-                
-                # Compute the loss (for classification, use 0-1)
-                if type == 'classification':
-                    loss = 0 if classes[F] == y[i] else 1
-                else:
-                    loss = (y[i] - F) ** 2
-                
-                error = 1 - F if type == 'classification' else y[i] - F
-                
-                # Update weights
-                for w in self.weights:
-                    w = w - 0.1 * g * 
+                # Compute scores for each output node
+                output_scores = np.array([g.T.dot(self.weights[i]) for i in range(len(self.weights))])
+                # Guess the class/regression value
+                F = max(output_scores) if type == 'regression' else np.argmax(output_scores)
+                # Then do back prop
+                self.back_prop(g, output_scores, F, type, y[i], classes)
 
-    def predict(self, x, type):
+    def predict(self, x, type, centers):
+        std_devs = get_std_devs(centers)
         g = np.array([gaussian(x, c, s) for c,s in zip(centers, std_devs)])
         output_scores = [g.T.dot(self.weights[i]) for i in range(len(self.weights))]
-        
+        print("OUTPUT SCORES: ", output_scores)
         if type == "classification":
             F = output_scores.index(max(output_scores))
         else:
