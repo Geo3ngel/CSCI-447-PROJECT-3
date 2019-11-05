@@ -24,34 +24,63 @@ def get_std_devs(c):
 @param epochs   the number of epochs to run for
 '''
 class RBF():
-    def __init__(self, k, o, epochs):
+    def __init__(self, k, o, epochs=100):
         self.k = k
         self.epochs = epochs
         # Initialize matrix of weights
         self.weights = [np.random.rand(k) for i in range(o)]
+        self.learn_rate = 0.1
+        self.alpha = 0.5
     
     '''
     @brief              Fit the model
     @param X            The dataset
     @param y            The correct classifacation for each data example
     @param classes      The set of possible classes
+    @param type         The dataset type (classification or regression)
     '''
-    def fit(self, X, centers, y, classes=[]):
+    def fit(self, X, centers, y, type, classes=[]):
         # Compute standard deviations
         std_devs = get_std_devs(centers)
 
         for epoch in range(self.epochs):
-            for row in X:
-                print("ROW: ", row)
+            print("EPOCH: ", epoch)
+            for i in range(len(X)):
                 # Build array of gaussians for each center
-                g = np.array([gaussian(row, c, s) for c,s in zip(centers, std_devs)])
+                g = np.array([gaussian(X[i], c, s) for c,s in zip(centers, std_devs)])
                 # Predict the class
                 output_scores = [g.T.dot(self.weights[i]) for i in range(len(self.weights))]
                 # print('OUTPUT SCORES: ', output_scores)
-                F = max(output_scores)
-                # print("F: ", F)
-                # Compute the loss (for classification, use 0-1?)
-                C = 0 if F == y[i] else 1
+                F = max(output_scores) if type == 'regression' else output_scores.index(max(output_scores))
+                # print("F = ", F)
+                
+                # Compute the loss (for classification, use 0-1)
+                if type == 'classification':
+                    loss = 0 if classes[F] == y[i] else 1
+                else:
+                    loss = (y[i] - F) ** 2
+                
+                error = 1 - F if type == 'classification' else y[i] - F
+                
+                # Update weights
+                for w in self.weights:
+                    w = w - 0.1 * g * 
+
+    def predict(self, x, type):
+        g = np.array([gaussian(x, c, s) for c,s in zip(centers, std_devs)])
+        output_scores = [g.T.dot(self.weights[i]) for i in range(len(self.weights))]
+        
+        if type == "classification":
+            F = output_scores.index(max(output_scores))
+        else:
+            F = max(output_scores)
+        
+        return F
+
+
+                
+                
+
                 
 
 

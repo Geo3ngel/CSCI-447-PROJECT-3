@@ -105,14 +105,23 @@ def main():
             vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
             enn = k_nn.edited_knn(td, vd)
             # Run data thru rbf net
-            rbf = RBF(len(enn), 7, 1)
+            rbf = RBF(len(enn), 7, 100)
 
             # Hardcoding the classes for now
             #TODO implement a way to get classes thru database.py
             classes = ['BRICKFACE', 'SKY', 'FOLIAGE', 'CEMENT', 'WINDOW', 'PATH', 'GRASS']
             # get column vector storing correct classifications of each row
             y = np.array(db.get_data())[:,db.get_classifier_col()]
-            rbf.fit(db.get_data(), enn, y, classes)
+            rbf.fit(db.get_data(), enn, y, db.get_dataset_type(), classes)
+
+            X = db.get_data()
+            for i in range(10):
+                print("Current point:")
+                print(X[i])
+                idx = rbf.predict(X[i], db.get_dataset_type())
+                print("Predicted class: ", classes[idx])
+
+            
     
 # -------------------------------------------------------------
 
