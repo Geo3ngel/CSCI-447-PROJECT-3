@@ -59,6 +59,8 @@ def verify_save_folder(pm, db):
     
     pm.set_save_state_folder(save_folder_name)
     
+    print("FOLDER NAME:", pm.get_save_state_dir())
+    
     pm.make_folder_at_dir(pm.get_save_state_dir())
         
     return select_save_state(pm)
