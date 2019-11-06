@@ -22,3 +22,7 @@ def save_state(state_object, state_filename):
     state = None
     with open(state_filename, 'wb') as state_file:
         pickle.dump(state_object, state_file)
+        
+# Make the folder for the current database's save states (if one does not already exist)
+def gen_save_folder():
+    pass
