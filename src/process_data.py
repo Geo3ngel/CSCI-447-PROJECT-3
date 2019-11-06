@@ -35,12 +35,10 @@ def process_database_file(path_manager):
     elif db_data[-1][0] is "" and len(db_data[-1]) is 1: 
         db_data.pop()
         
-
-    
     attributes, classifier_column, classifier_attr_cols, \
-    missing_symbol, dataset_type, class_list = read_attributes(path_manager.get_current_selected_dir(), data_filename)
+    missing_symbol, dataset_type, class_list, layers = read_attributes(path_manager.get_current_selected_dir(), data_filename)
 
-    return db(db_data, attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type, class_list)
+    return db(db_data, attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type, class_list, layers)
 
 # Reads in the attribute file from a database, and returns the attributes as a list
 def read_attributes(directory, data_filename):
@@ -69,8 +67,14 @@ def read_attributes(directory, data_filename):
     if dataset_type == 'classification':
         for c in attribute_file.readline().strip('\n').split(','):
             class_list.append(c)
+
+    # Gets the layers of the nerual network from the attr configuration, with respective node counter per layer.
+    layers = []
+    for cols in  attribute_file.readline().strip('\n').split(','):
+        layers.append(int(cols))
     
-    return attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type, class_list
+    return attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type, class_list, layers
+
     
 """ -------------------------------------------------------------
 @param  input_csv   Comma-seperated string to convert

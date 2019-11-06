@@ -112,7 +112,7 @@ def main():
             X = process_data.shuffle_all(db.get_data(), 1)
             
             # Hardcoding the classes for now
-            # get column vector storing correct classifications of each row
+            # Get column vector storing correct classifications of each row
             y = np.array(db.get_data())[:,db.get_classifier_col()]
             rbf.fit(X, enn, y, db.get_dataset_type(), db.get_class_list())
             print("Final Weights: ")

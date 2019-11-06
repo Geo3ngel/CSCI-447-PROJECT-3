@@ -1,7 +1,7 @@
 George Engel
-a)
+a) Addition of Neural Net Layer/Node input from .attr configuration file.
 
-b)
+b) Addition of Save States, and the relevant loading mechanism for save states.
 
 Dana Parker
 a)
