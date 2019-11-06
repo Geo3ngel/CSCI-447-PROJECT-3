@@ -17,11 +17,32 @@ class pathManager:
         self.ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         # Initializes the folder name for the directory that holds the databases.
         self.databases_folder = "databases"
+        # Initializes the save state directory as None.
+        self.save_state_folder = None
         
         # Initialize this to empty
         self.current_selected_folder = ""
         
         print("Path manager Initialized!")
+        
+    ### SAVE STATE PATH RELATED:
+    def get_save_state_folder(self):
+        return self.save_state_folder
+    
+    def set_save_state_folder(self, folder_name):
+        # Verify the file exists
+        self.save_state_folder = folder_name
+        
+    def verify_save_state_folder_exists(self, save_state_folder):
+        path = os.path.join(self.ROOT_DIR, self.databases_folder)
+        path = os.path.join(path, "save_states")
+        path = os.path.join(path, save_state_folder)
+        return self.validate_dir(path)
+        
+    def get_save_state_dir(self):
+        path = os.path.join(self.ROOT_DIR, self.databases_folder)
+        path = os.path.join(path, "save_states")
+        return os.path.join(path, self.save_state_folder)
         
     ### DATABASE PATH RELATED:    
     
@@ -95,4 +116,15 @@ class pathManager:
         elif os.path.isdir(dir_path):
             return True
         else:
+            return False
+        
+    def make_folder_at_dir(self, path):
+        
+        try:
+            os.makedirs(path)
+            print("Directory " + path + " created.")
+            return True
+
+        except FileExistsError:
+            print("Directory already exists @", path)
             return False
