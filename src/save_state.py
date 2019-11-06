@@ -2,13 +2,13 @@
 
 # IMPORTS
 import pickle
-
-# TODO: Interface w/ the path manager somehow to know where to put the save and what to name it?
+import os.path
 
 # TODO: Use the type of the object being loaded to determine how it is placed back into the project?
 
 # Basic Functions for loading json object
 
+# TODO: Replace filename with path, as it may be more relevant naming scheme?
 def load_state(state_filename):
     state = None
     with open(state_filename, 'rb') as state_file:
@@ -16,11 +16,12 @@ def load_state(state_filename):
         
     return state
 
-# Functions for saving json object
-def save_state(state_object, state_filename):
-    # TODO: Consider handling state filename differently?
+# Functions for saving json object. Takes in the NN to save, the desired filename (EPOCH#) and path manager to save it in the right place.
+def save_state(state_object, state_filename, pm):
+    path = os.path.join(pm.get_save_state_dir(), state_filename)
+    
     state = None
-    with open(state_filename, 'wb') as state_file:
+    with open(path, 'wb') as state_file:
         pickle.dump(state_object, state_file)
         
 # Set the path manager's current save folder to the current settings if it exists, or create it
@@ -59,7 +60,7 @@ def select_save_state(pm):
                 
                 if exists:
                     # Load save_state object and return!
-                    return ss.load_state(path)
+                    return load_state(path)
                 else:
                     print("Invalid save state. Try again.")
         else:

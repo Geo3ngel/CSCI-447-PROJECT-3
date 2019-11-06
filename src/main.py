@@ -121,6 +121,9 @@ def main():
             class_count = len(db.get_class_list()) if db.get_dataset_type() == 'classification' else 1 
             rbf = RBF(len(enn), class_count, 100)
 
+            ss.save_state(rbf, "test1", pm)
+            print("SAVED STATE.")
+
             X = process_data.shuffle_all(db.get_data(), 1)
             
             # Hardcoding the classes for now
