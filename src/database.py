@@ -13,7 +13,7 @@ class database:
     @param  data_array  List of data from one data repository
                         that will be or has been filtered.
     """
-    def __init__(self, data_array, attrs, classifier_col, classifier_attr_cols, symbol, dataset_type, class_list=[], layers):
+    def __init__(self, data_array, attrs, classifier_col, classifier_attr_cols, symbol, dataset_type, layers, class_list=[]):
         print("Database initialized.")
         self.data = data_array
         self.attributes = attrs
