@@ -52,7 +52,9 @@ class RBF():
             for w,a in zip(self.weights.T, activations):
                 w = w - self.learn_rate * errors * a
         else: # Type = regression
-            pass
+            error = y - F
+            for w in self.weights:
+                w = w - self.learn_rate * error * activations           
     
     '''
     @brief              Fit the model
