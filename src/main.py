@@ -145,44 +145,68 @@ def main():
 
     for database in selected_dbs:
             db = prepare_db(database, pm)
-            print("CLASSES: ", db.get_class_list())
-
-            k_nn = knn(100, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
             
-            # Run condensed nearest neighbor
-            cnn = k_nn.condensed_nn(db.get_data())
+            classes = db.get_class_list() if db.get_dataset_type() == 'classification' else 1
+            class_count = len(classes) if db.get_dataset_type() == 'classification' else 1
+
+            X = process_data.shuffle_all(db.get_data(), 1)
+            y = np.array(db.get_data())[:,db.get_classifier_col()]
+
+            # RUN K-MEANS
+            # print("RUNNING K-MEANS")
+            # kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
+            # centers = kc.get_centroids()
+
+            # rbf = RBF(len(centers), class_count)
+            # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
+            # print("FINAL WEIGHTS:")
+            # print(rbf.weights)
+
+            #RUN K-MEDOIDS
+            print("RUNNING K-MEDOIDS")
+            kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-medoids')
+            indices = kc.get_medoids()
+            centers = [db.get_data()[i] for i in indices]
+
+            print("CENTERS: ", centers)
+
+            rbf = RBF(len(centers), class_count)
+            rbf.fit(X, centers, y, db.get_dataset_type(), classes)
+            print("FINALS WEIGHTS:")
+            print(rbf.weights)
+
+
+
+            # Run CNN
+            # cnn = k_nn.condensed_nn(db.get_data())
             
             # Run edited nearest neighbor
             # Training data, first 90%
-            td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
+            # td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
             # Validation Data, last 10%
-            vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
-            enn = k_nn.edited_knn(td, vd)
+            # vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
+            # enn = k_nn.edited_knn(td, vd)
             
             # Run data thru rbf net
-            class_count = len(db.get_class_list()) if db.get_dataset_type() == 'classification' else 1 
-            rbf = RBF(len(enn), class_count, 100)
-
-            X = process_data.shuffle_all(db.get_data(), 1)
+            # class_count = len(db.get_class_list()) if db.get_dataset_type() == 'classification' else 1 
+            # rbf = RBF(len(enn), class_count, 100)
             
-            # Hardcoding the classes for now
             # Get column vector storing correct classifications of each row
-            y = np.array(db.get_data())[:,db.get_classifier_col()]
-            rbf.fit(X, enn, y, db.get_dataset_type(), db.get_class_list())
+            # rbf.fit(X, enn, y, db.get_dataset_type(), db.get_class_list())
             
-            print("Final Weights: ")
-            print(rbf.weights)
+            # print("Final Weights: ")
+            # print(rbf.weights)
             
-            for i in range(10):
-                print("Current point:")
-                print(X[i])
-                print("Correct classification: ", X[i][db.get_classifier_col()])
-                val = rbf.predict(X[i], db.get_dataset_type(), enn)
-                if db.get_dataset_type() == 'classification':
-                    print("Predicted class: ", db.get_class_list()[val])
-                else:
-                    print("Predicted value: ", val)
-                print('-------------------------------------------')
+            # for i in range(10):
+            #     print("Current point:")
+            #     print(X[i])
+            #     print("Correct classification: ", X[i][db.get_classifier_col()])
+            #     val = rbf.predict(X[i], db.get_dataset_type(), enn)
+            #     if db.get_dataset_type() == 'classification':
+            #         print("Predicted class: ", db.get_class_list()[val])
+            #     else:
+            #         print("Predicted value: ", val)
+            #     print('-------------------------------------------')
 
             
     
