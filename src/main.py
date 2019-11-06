@@ -153,14 +153,14 @@ def main():
             y = np.array(db.get_data())[:,db.get_classifier_col()]
 
             # RUN K-MEANS
-            # print("RUNNING K-MEANS")
-            # kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
-            # centers = kc.get_centroids()
+            print("RUNNING K-MEANS")
+            kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
+            centers = kc.get_centroids()
 
-            # rbf = RBF(len(centers), class_count)
-            # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
-            # print("FINAL WEIGHTS:")
-            # print(rbf.weights)
+            rbf = RBF(len(centers), class_count)
+            rbf.fit(X, centers, y, db.get_dataset_type(), classes)
+            print("FINAL WEIGHTS:")
+            print(rbf.weights)
 
             #RUN K-MEDOIDS
             print("RUNNING K-MEDOIDS")

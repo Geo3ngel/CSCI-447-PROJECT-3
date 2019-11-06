@@ -41,6 +41,8 @@ class pathManager:
         
     def get_save_state_dir(self):
         path = os.path.join(self.ROOT_DIR, self.databases_folder)
+        print("DATABASE:", self.current_selected_folder)
+        path = os.path.join(path, self.current_selected_folder)
         path = os.path.join(path, "save_states")
         return os.path.join(path, self.save_state_folder)
         
