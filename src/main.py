@@ -8,6 +8,8 @@
 # Third-party imports
 
 import numpy as np
+import os.path
+import save_state as ss
 
 # -------------------------------------------------------------
 # Custom imports
@@ -45,6 +47,48 @@ def select_db(databases):
             print(db, "is an invalid entry. Try again.")
     return chosen_dbs
 
+
+# Set the path manager's current save folder to the current settings if it exists, or create it
+def verify_save_folder(pm, db):
+    save_folder_name = ""
+    for layer in db.get_layers():
+        save_folder_name+=str(layer)+"-"
+        
+    # Remove the last extra character
+    save_folder_name = save_folder_name[:-1]
+    
+    pm.set_save_state_folder(save_folder_name)
+    
+    pm.make_folder_at_dir(pm.get_save_state_dir())
+        
+    return select_save_state(pm)
+    
+
+# Allows you to load from a save state for a given database's layer/node combination if one is present.
+def select_save_state(pm):
+    # Checks that save state folder contains states
+    if len(pm.find_files(pm.get_save_state_dir(), "")) > 0:
+        
+        # Provides the option to load from an existing save state
+        awns = input("\nWould you like to load from an existing save state?")
+        if awns.lower() is "y":
+            exists = True
+            while(exists):
+                print("Current save states (Epochs):", pm.find_files(pm.get_save_state_dir(), ""))
+                save_state = input("Select a saved state (Epoch #):")
+                # Validate the save state exists
+                path = os.path.join(pm.get_save_state_dir(), save_state)
+                exists = pm.validate_file(path)
+                
+                if exists:
+                    # Load save_state object and return!
+                    return ss.load_state(path)
+                else:
+                    print("Invalid save state. Try again.")
+        else:
+            print("Beginning new Neural Net...")
+    return False
+
 # -------------------------------------------------------------
 
 def prepare_db(database, pm):
@@ -55,6 +99,12 @@ def prepare_db(database, pm):
     # a pre processed database ready to be used as a learning/training set.
     db = process_data.process_database_file(pm)
 
+    save_state = verify_save_folder(pm, db)
+    
+    if save_state is not False:
+        # This is where we use the loaded save state object specified
+        pass
+    
     # output_file.write('CURRENT DATASET: ' + database + '\n')
     # debug_file.write('CURRENT DATASET: ' + database + '\n')
     # output_file.write('DATA TYPE: ' + db.get_dataset_type() + '\n')
