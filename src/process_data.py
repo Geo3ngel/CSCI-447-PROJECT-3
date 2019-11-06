@@ -135,6 +135,19 @@ def data_correction(input_db, attribute_count):
             
     return input_db, correction_queue
 
+# One hot encoding function for giving numerical value representation for catagorical values.
+def one_hot_encode(data_column):
+    # make a set of the data column list (Then convert to list again to index, because lazy)
+    # Should honestly use a hash table, but eh, thats effort.
+    one_hot_set = list(set(data_column))
+    
+    one_hot_column = []
+    # Replace catagorical values with numerical indexes from the set
+    for data in data_column:
+        one_hot_column.append(one_hot_set.index(data))
+        
+    return one_hot_column
+
 # Finds any ambiguous/missing data and returns the rows of the relevant database in which missing parameters occur.
 def identify_missing_data(input_db):
     
