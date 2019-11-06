@@ -3,3 +3,4 @@ region-centroid-col,region-centroid-row,region-pixel-count,short-line-density-5,
 1,2,3,4,5,18
 None
 classification
+BRICKFACE,SKY,FOLIAGE,CEMENT,WINDOW,PATH,GRASS

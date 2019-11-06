@@ -15,7 +15,6 @@ import os
             (see database.py)
 @brief      Loads the file contents into a database object
 """
-
 def process_database_file(path_manager):
 
     # loads in data file from the selected database directory
@@ -38,9 +37,10 @@ def process_database_file(path_manager):
         
 
     
-    attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type = read_attributes(path_manager.get_current_selected_dir(), data_filename)
+    attributes, classifier_column, classifier_attr_cols, \
+    missing_symbol, dataset_type, class_list = read_attributes(path_manager.get_current_selected_dir(), data_filename)
 
-    return db(db_data, attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type)
+    return db(db_data, attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type, class_list)
 
 # Reads in the attribute file from a database, and returns the attributes as a list
 def read_attributes(directory, data_filename):
@@ -65,7 +65,12 @@ def read_attributes(directory, data_filename):
     
     dataset_type = attribute_file.readline().strip('\n')
     
-    return attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type
+    class_list = []
+    if dataset_type == 'classification':
+        for c in attribute_file.readline().strip('\n').split(','):
+            class_list.append(c)
+    
+    return attributes, classifier_column, classifier_attr_cols, missing_symbol, dataset_type, class_list
     
 """ -------------------------------------------------------------
 @param  input_csv   Comma-seperated string to convert

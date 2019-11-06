@@ -95,6 +95,8 @@ def main():
 
     for database in selected_dbs:
             db = prepare_db(database, pm)
+            print("CLASSES: ", db.get_class_list())
+
             k_nn = knn(100, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
             # Run condensed nearest neighbor
             cnn = k_nn.condensed_nn(db.get_data())
@@ -105,18 +107,14 @@ def main():
             vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
             enn = k_nn.edited_knn(td, vd)
             # Run data thru rbf net
-            rbf = RBF(len(enn), 7)
-
-            # Hardcoding the classes for now
-            #TODO implement a way to get classes thru database.py
+            rbf = RBF(len(enn), len(db.get_class_list()))
 
             X = process_data.shuffle_all(db.get_data(), 1)
             
-
-            classes = ['BRICKFACE', 'SKY', 'FOLIAGE', 'CEMENT', 'WINDOW', 'PATH', 'GRASS']
+            # Hardcoding the classes for now
             # get column vector storing correct classifications of each row
             y = np.array(db.get_data())[:,db.get_classifier_col()]
-            rbf.fit(X, enn, y, db.get_dataset_type(), classes)
+            rbf.fit(X, enn, y, db.get_dataset_type(), db.get_class_list())
             print("Final Weights: ")
             print(rbf.weights)
             for i in range(10):
@@ -129,6 +127,7 @@ def main():
             
     
 # -------------------------------------------------------------
+
 
 if __name__ == '__main__':
     main()

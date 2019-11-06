@@ -11,7 +11,7 @@ def gaussian(x, c, s):
 
 '''
 @param c    the set of centers
-@brief      return a set of std deviations for each center/neuron
+@brief      return a set of standard deviations for each center/neuron
 '''
 def get_std_devs(c):
     return [sum([cf.euc_dist(c1,c2) for c2 in c]) / len(c) for c1 in c]
@@ -51,7 +51,7 @@ class RBF():
             # print("Errors: ", errors)
             for w,a in zip(self.weights.T, activations):
                 w = w - self.learn_rate * errors * a
-        else:
+        else: # Type = regression
             pass
     
     '''
@@ -85,7 +85,6 @@ class RBF():
             F = output_scores.index(max(output_scores))
         else:
             F = max(output_scores)
-        
         return F
 
 

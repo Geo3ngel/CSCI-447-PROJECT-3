@@ -13,7 +13,7 @@ class database:
     @param  data_array  List of data from one data repository
                         that will be or has been filtered.
     """
-    def __init__(self, data_array, attrs, classifier_col, classifier_attr_cols, symbol, dataset_type):
+    def __init__(self, data_array, attrs, classifier_col, classifier_attr_cols, symbol, dataset_type, class_list=[]):
         print("Database initialized.")
         self.data = data_array
         self.attributes = attrs
@@ -21,6 +21,7 @@ class database:
         self.classifier_attr_columns = classifier_attr_cols
         self.missing_symbol = symbol
         self.db_type = dataset_type
+        self.class_list = class_list
         
     def convert_discrete_to_float(self):
         self.data = process_data.convert(self.data)
@@ -65,6 +66,9 @@ class database:
                 classifiers.append(row[class_idx])
         
         return classifiers
+    
+    def get_class_list(self):
+        return self.class_list
     
     def get_training_data(self, start_idx, end_idx):
         return self.data[start_idx : end_idx]
