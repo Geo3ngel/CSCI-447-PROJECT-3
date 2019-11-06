@@ -3,6 +3,7 @@
 # IMPORTS
 import pickle
 import os.path
+from Interface import Interface
 
 # TODO: Use the type of the object being loaded to determine how it is placed back into the project?
 
@@ -17,9 +18,10 @@ def load_state(state_filename):
     return state
 
 # Functions for saving json object. Takes in the NN to save, the desired filename (EPOCH#) and path manager to save it in the right place.
-def save_state(state_object, state_filename, pm):
-    path = os.path.join(pm.get_save_state_dir(), state_filename)
+def save_state(state_object, state_filename):
+    path = os.path.join(Interface.path_manager.get_save_state_dir(), state_filename)
     
+    print("INTERFACE PATH:", Interface.path_manager.get_save_state_dir())
     state = None
     with open(path, 'wb') as state_file:
         pickle.dump(state_object, state_file)

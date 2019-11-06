@@ -10,6 +10,7 @@
 import numpy as np
 import os.path
 import save_state as ss
+import Interface
 
 # -------------------------------------------------------------
 # Custom imports
@@ -101,6 +102,8 @@ def main():
     pm = path_manager()
     selected_dbs = select_db(pm.find_folders(pm.get_databases_dir()))
 
+    Interface.init_values(pm)
+
     for database in selected_dbs:
             db = prepare_db(database, pm)
             print("CLASSES: ", db.get_class_list())
@@ -121,7 +124,7 @@ def main():
             class_count = len(db.get_class_list()) if db.get_dataset_type() == 'classification' else 1 
             rbf = RBF(len(enn), class_count, 100)
 
-            ss.save_state(rbf, "test1", pm)
+            ss.save_state(rbf, "test2")
             print("SAVED STATE.")
 
             X = process_data.shuffle_all(db.get_data(), 1)
