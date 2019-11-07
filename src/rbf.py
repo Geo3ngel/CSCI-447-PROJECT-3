@@ -16,6 +16,21 @@ def gaussian(x, c, s):
 def get_std_devs(c):
     return [sum([cf.euc_dist(c1,c2) for c2 in c]) / len(c) for c1 in c]
 
+'''
+@param  c the centers
+@brief  get the std deviation for the entire set of centers 
+'''
+def std_dev(c):
+    d_max = max([cf.euc_dist(c1,c2) for c1 in c for c2 in c])
+    return d_max / np.sqrt(2 * len(c))
+
+def cost_func(output_scores, F, y, type, classes=[]):
+    if type == 'classification':
+        correct_probs = np.array([1 if c == y else 0 for c in classes])
+        errors = (correct_probs - output_scores) ** 2
+        return sum(errors)
+    else:
+        return (y - F) ** 2
 
 
 
@@ -65,18 +80,26 @@ class RBF():
     '''
     def fit(self, X, centers, y, type, classes=[]):
         # Compute standard deviations
-        std_devs = get_std_devs(centers)
+        s = std_dev(centers)
         for epoch in range(self.epochs):
             print("EPOCH: ", epoch)
             for i in range(len(X)):
+                print("POINT ", i)
                 # Build array of gaussians for each center
-                g = np.array([gaussian(X[i], c, s) for c,s in zip(centers, std_devs)])
+                g = np.array([gaussian(X[i], c, s) for c in centers])
                 # Compute scores for each output node
                 output_scores = np.array([g.T.dot(self.weights[i]) for i in range(len(self.weights))])
                 # Guess the class/regression value
                 F = max(output_scores) if type == 'regression' else np.argmax(output_scores)
                 # Then do back prop
+                cost = cost_func(output_scores, F, y[i], type, classes)
+                print("COST: ", cost)
+                print("----------------------------------------------")
                 self.back_prop(g, output_scores, F, type, y[i], classes)
+            print('\n\n')
+
+            
+            
 
     def predict(self, x, type, centers):
         std_devs = get_std_devs(centers)
