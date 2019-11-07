@@ -16,13 +16,36 @@ def gaussian(x, c, s):
 def get_std_devs(c):
     return [sum([cf.euc_dist(c1,c2) for c2 in c]) / len(c) for c1 in c]
 
+from collections import Counter
+def find_mean_pt(centers):
+    vars = [np.array(centers)[:,i].tolist() for i in range(len(centers[0]))]
+    mean_pt = []
+    for v in vars:
+        print("V: ", v)
+        # if v.dtype.type is np.str_:
+        if type(v[0]) == str:
+            print("It's a string.")
+            c = Counter(v)
+            mean_pt.append(c.most_common(1)[0][0])
+        else:
+            mean_pt.append(np.mean(np.array(v)))
+    return mean_pt
+    
+        
+            
+
 '''
 @param  c the centers
 @brief  get the std deviation for the entire set of centers 
 '''
 def std_dev(c):
-    d_max = max([cf.euc_dist(c1,c2) for c1 in c for c2 in c])
-    return d_max / np.sqrt(2 * len(c))
+    # d_max = max([cf.euc_dist(c1,c2) for c1 in c for c2 in c])
+    # return d_max / np.sqrt(2 * len(c))
+    mean = find_mean_pt(c)
+    print("MEAN POINT:")
+    print(mean)
+    dists = [cf.euc_dist(mean, c1) for c1 in c]
+    return sum(dists) / len(c)
 
 def cost_func(output_scores, F, y, type, classes=[]):
     if type == 'classification':
@@ -44,7 +67,7 @@ class RBF():
         self.k = k
         self.epochs = epochs
         # Initialize matrix of weights
-        self.weights = np.array([np.random.rand(k) for i in range(o)])
+        self.weights = np.array([np.zeros(k) for i in range(o)])
         self.learn_rate = 0.1
         self.alpha = 0.5
     
@@ -60,12 +83,24 @@ class RBF():
         if type == "classification":
             correct_probs = np.array([1 if c == y else 0 for c in classes])
             errors = correct_probs - output_scores
-            # print("Activations: ", activations)
+            # print("ERRORS: ", errors)
             # print("Output Scores: ", output_scores)
-            # print("Weights: ", self.weights)
+            
+            # print("WEIGHTS: ")
+            # print(self.weights)
+            
             # print("Errors: ", errors)
-            for w,a in zip(self.weights.T, activations):
-                w = w - self.learn_rate * errors * a
+            # for w,a in zip(self.weights.T, activations):
+            for i in range(len(self.weights.T)):
+                print("BEFORE WT: ")
+                print(self.weights.T)
+                self.weights.T[i] = self.weights.T[i] - self.learn_rate * errors * self.alpha * activations[i]
+                print("AFTER WT: ") 
+                print(self.weights.T)
+            
+            print("UPDATED WEIGHTS:") 
+            print(self.weights)
+
         else: # Type = regression
             error = y - F
             for w in self.weights:
@@ -81,21 +116,30 @@ class RBF():
     def fit(self, X, centers, y, type, classes=[]):
         # Compute standard deviations
         s = std_dev(centers)
+        print("STD DEV: ", s)
+        
         for epoch in range(self.epochs):
             print("EPOCH: ", epoch)
             for i in range(len(X)):
-                print("POINT ", i)
+                print("POINT ", X[i])
                 # Build array of gaussians for each center
                 g = np.array([gaussian(X[i], c, s) for c in centers])
+                # print("GAUSSIANS:")
+                # print(g)
                 # Compute scores for each output node
                 output_scores = np.array([g.T.dot(self.weights[i]) for i in range(len(self.weights))])
+                print("OUTPUT SCORES: ")
+                print(output_scores)
                 # Guess the class/regression value
                 F = max(output_scores) if type == 'regression' else np.argmax(output_scores)
+                print("F: ", F)
                 # Then do back prop
+                self.back_prop(g, output_scores, F, type, y[i], classes)
+                # print("WEIGHTS: ")
+                # print(self.weights)
                 cost = cost_func(output_scores, F, y[i], type, classes)
                 print("COST: ", cost)
-                print("----------------------------------------------")
-                self.back_prop(g, output_scores, F, type, y[i], classes)
+                
             print('\n\n')
 
             
