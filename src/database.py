@@ -30,7 +30,7 @@ class database:
         # print("SELF DATA:", self.data)
         
     def get_layers(self):
-        return self.layers    
+        return self.layers  
     
     def to_string(self):
         if len(self.data) < 1:
@@ -74,6 +74,9 @@ class database:
     
     def get_class_list(self):
         return self.class_list
+
+    def set_class_list(self, vals):
+        self.class_list = vals
     
     def get_training_data(self, start_idx, end_idx):
         return self.data[start_idx : end_idx]

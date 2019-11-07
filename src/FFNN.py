@@ -16,30 +16,42 @@ import numpy as np
 
 # ----------------------------------------------
 # Custom imports
-import cost_functions as cost
+import Cost_Functions as cost
 
 # ----------------------------------------------
 # The Feed-Forward Neural Network object
 class FFNN():
-    
+
     '''
     ----------------------------------------------
     Constructor
-    
+
     in_layer_sizes    Contains the number of neurons
                       in the i-th layer
     '''
-    def __init__(self, layer_sizes, db_type, 
-        data, desired_out_col,
-        num_epochs=50, using_test_data=False):
+    def __init__(self, layer_sizes, db_type,
+        data, desired_out_col, learning_rate,
+        class_list=None, num_epochs=50, using_test_data=True, debug=True):
 
+        self.debug = debug
+
+        if self.debug is True:
+            print('FFNN: Enter __init__')
+
+        # A list of integers representing
+        # the number of nodes in layer i
         self.layer_sizes = layer_sizes
         self.epochs = [[] for x in range(num_epochs)]
         self.db_type = db_type
+        self.learning_rate = learning_rate
+        self.data = self.split_and_augment_data(data, desired_out_col)
+        if class_list:
+            self.class_list = class_list
+
 
         # Initializes weights via a normal distribution.
         self.weight_vec = [np.random.randn(x, y)
-            for y, x in zip(layer_sizes[:-1], layer_sizes[1:])]
+            for x, y in zip(layer_sizes[1:], layer_sizes[:-1])]
 
         # Initializes biases via a normal distribution.
         #
@@ -47,57 +59,72 @@ class FFNN():
         # the input layer and the first layer,
         # hence layer_sizes[1:].
         self.bias_vec = [np.random.randn(x, 1)
-            for x in self.layer_sizes[1:]]
+            for x in self.layer_sizes[:len(layer_sizes) - 1]]
 
-        if using_test_data is True:
-            self.test_data, self.tr_data = \
-                self.split_and_augment_data(data, desired_out_col)
-        else:
-            self.tr_data = self.augment_data(data, desired_out_col)
+        self.grad_desc()
+
+        print('\n\nEND WOOOOOO')
+        print('\nself.weight_vec')
+        print(self.weight_vec)
+        print('\nself.bias_vec')
+        print(self.bias_vec)
 
     '''
     ----------------------------------------------
     The counterpart to augment_data().
-    This function is for when we want to test the neural net using 
+    This function is for when we want to test the neural net using
     test / training data. (To do this should be much slower.)
     '''
     def split_and_augment_data(self, data, desired_out_col):
+
+        if self.debug is True:
+            print('FFNN: Enter split_and_augment_data()')
+
         random.shuffle(data)
- 
+
         temp = []
         for ex in data:
-            temp.append(ex, ex[desired_out_col])
+            desired = ex.pop(desired_out_col)
+            new_ex = [attr for idx, attr in enumerate(ex)
+                if idx != desired_out_col]
+            temp.append((new_ex, desired))
 
-        test_data = temp[0 : math.ceil(len(data) / 10)]
-        tr_data = temp[math.ceil(len(data) / 10) + 1 : len(data)]
+        return temp
 
-        return test_data, tr_data
-    
-    '''
-    ----------------------------------------------
-    The counterpart to split_and_augment_data().
-    This function is for when we want to only train the neural network,
-    which should be faster than if we were to also test the 
-    trained neural network.
-    '''
+    # '''
+    # ----------------------------------------------
+    # The counterpart to split_and_augment_data().
+    # This function is for when we want to only train the neural network,
+    # which should be faster than if we were to also test the
+    # trained neural network.
+    # '''
 
-    def augment_data(self, data, desired_out_col):
-        return [(ex, ex[desired_out_col]) for ex in data]
-    
+    # def augment_data(self, data, desired_out_col):
+
+    #     if self.debug is True:
+    #         print('FFNN: Enter augment_data()')
+
+    #     return [(ex, ex[desired_out_col]) for ex in data]
+
     # ----------------------------------------------
     # Returns the output layer produced from `in_act`
     #
     # in_act    An activation vector of some layer
     def feed_forward(self, in_act_vec):
+
+        if self.debug is True:
+            print('FFNN: Enter feed_forward()')
+
         for bias, weight in zip(self.weight_vec, self.bias_vec):
             out_act_vec = sig(np.dot(in_act_vec, weight) + bias)
+
         return out_act_vec
-    
+
     '''
     ----------------------------------------------
     Trains the neural network via stochastic gradient descent
     with mini-batches.
-    
+
     tr_data                 The training data
     test_data               The test data
     learning_rate           A real number between 0 and 1
@@ -106,24 +133,29 @@ class FFNN():
                             print the evaluation of EVERY epoch
                             (WARNING: slow if True)
     '''
-    def grad_desc(self, tr_data, test_data, learning_rate, 
-        print_partial_progress=False, len_batch=20):
+    def grad_desc(self, print_partial_progress=True):
+
+        if self.debug is True:
+            print('FFNN: Enter grad_desc()')
 
         # Variables to make the code cleaner
-        n_test = len(test_data)
-        n_train = len(tr_data)
+        # if self.test_data:
+        #     n_test = len(self.test_data)
+
+        n_data = len(self.data)
         n_epoch = len(self.epochs)
+        len_batch = math.ceil(n_data / 10)
 
         # The gradient descent itself for every epoch
         for e in range(n_epoch):
-            
+
             # Randomly shuffle the training data
-            random.shuffle(tr_data)
-            
+            random.shuffle(self.data)
+
             # Split the data into mini-batches
-            batches = [tr_data[x : x + len_batch]
-                for x in range(0, n_train, len_batch)]
-            
+            batches = [self.data[x : x + len_batch]
+                for x in range(0, n_data, len_batch)]
+
             # For every mini-batch,
             # update the entire networks's weights and biases
             # via one gradient descent iteration
@@ -135,29 +167,35 @@ class FFNN():
                     for w in self.weight_vec]
 
                 for ex, desired_out in curr_batch:
-                    change_bias, change_weight = self.back_prop(ex, desired_out)
+                    change_bias, change_weight = self.back_prop([sig(attr) for attr in ex], desired_out)
                     new_bias = [bias + change
                         for bias, change
                         in zip(new_bias, change_bias)]
                     new_weight = [weight + change
                         for weight, change
                         in zip(new_weight, change_weight)]
-            
+
+                # Apply momentum
                 self.weight_vec = \
-                    [w - (learning_rate / len_batch) * nw
+                    [w - (self.learning_rate / len_batch) * nw
                     for w, nw
                     in zip(self.weight_vec, new_weight)]
-                
+
                 self.bias_vec = \
-                    [b - (learning_rate / len_batch) * nb
+                    [b - (self.learning_rate / len_batch) * nb
                     for b, nb
                     in zip(self.bias_vec, new_bias)]
-            
-            # if print_partial_progress is False:
-            #     if e == 0:
-            #         print("Epoch {}: {} / {}".format(e, self.))
 
-    
+            # Print results of the epochs
+            # if print_partial_progress is False:
+            #     if e == 0 or e == n_epoch - 1:
+            #         num_correct, total = self.zero_one_loss()
+            #         print('Epoch {}: {} / {}'.format(e, num_correct, total))
+            # else:
+            #     num_correct, total = self.zero_one_loss()
+            #     print('Epoch {}: {} / {}'.format(e, num_correct, total))
+
+
     '''
     ----------------------------------------------
     Basically finding the partial derivatives of
@@ -165,73 +203,119 @@ class FFNN():
     '''
     def back_prop(self, in_act_vec, desired_out):
 
+        # if self.debug is True:
+        #     print('FFNN: Enter back_prop()')
+
         # Variable delcarations
-        change_bias = [np.zeros(b.shape)
+        der_b = [np.zeros(b.shape)
             for b in self.bias_vec]
-        change_weight = [np.zeros(w.shape)
+        der_w = [np.zeros(w.shape)
             for w in self.weight_vec]
 
         # A list of activation vectors per layer
-        act_list = [in_act_vec]
+        act_vec = [in_act_vec]
 
         # A list of weighted sums per layer
         # (i.e. activations before sigmoid)
-        sum_list = []
+        z = []
 
         # For every weight vector and respective layer bias,
         # find every layer's pre-and-post-sigmoid activation vector
-        for curr_bias, curr_weight in zip(self.bias_vec, self.weight_vec):
-            curr_act = np.dot(curr_weight, in_act_vec) + curr_bias
-            sum_list.append(curr_act)
-            act_list.append(sig(curr_act))
-        
+        for curr_b, curr_w in zip(self.bias_vec, self.weight_vec):
+
+            curr_a = np.dot(curr_w, in_act_vec) + curr_b
+            # curr_act = np.dot(curr_weight, np.asarray(in_act_vec, dtype=curr_weight.dtype) + curr_bias
+            
+            z.append(curr_a)
+            act_vec.append(sig(curr_a))
+
         # Notice this is the same as the "for layer_idx..." loop below.
         # We need to do this first step at the last layer in
         # a particular way, so it goes outside of the loop
-        
-        temp = sig_prime(sum_list[-1]) \
-           * self.cost_prime(act_list[-1], desired_out)
 
-        change_bias[-1] = temp
+        delta_l = self.cost_prime(act_vec[-1], desired_out) * sig_prime(z[-1])
+        # delta_l = [np.sum(a) for a in delta_l]
+
+        der_b[-1] = delta_l
 
         # We transpose because we need the list to be a column vector
-        change_weight[-1] = np.dot(temp, act_list[-2].transpose())
+        # change_weight[-1] = np.dot(temp, act_list[-2])
 
-        for layer_idx in range(2, len(self.layer_sizes)):
+        # print('\n\nSTART DEBUG')
+        # print('\ndelta_l')
+        # print(delta_l)
+        # print('\nact_vec[-2].transpose()')
+        # print(act_vec[-2].transpose())
+
+        der_w[-1] = np.dot(np.column_stack(delta_l), act_vec[-2].transpose())
+
+        # print('\nder_w[-1]')
+        # print(der_w[-1])
+
+        for L in range(2, len(self.layer_sizes)):
 
             # Start at the last layer
-            curr_sum = sum_list[-layer_idx]
+            curr_sum = z[-L]
 
-            temp = \
-                np.dot(self.weight_vec[-layer_idx+1].transpose(), temp) \
-                * sig_prime(sum_list[-layer_idx])
-            
-            change_bias[-layer_idx] = temp
-            change_weight[-layer_idx] = \
-                np.dot(temp, act_list[-layer_idx-1].transpose())
-        return (change_bias, change_weight)
+            # print('\n\nSTART DEBUG')
+            # print('\nself.weight_vec[-L+1].transpose()')
+            # print(self.weight_vec[-L+1].transpose())
+            # print('\ndelta_l')
+            # print(delta_l)
+            # print('\nsig_prime(z[-L])')
+            # print(sig_prime(z[-L]))
+            # print('\ncolumn_stack(self.weight_vec[-L+1].transpose())')
+            # print(np.column_stack(self.weight_vec[-L+1].transpose()))
 
+            delta_l = np.dot(self.weight_vec[-L+1].transpose(), np.column_stack(delta_l)) * sig_prime(z[-L])
+            # delta_l = [np.sum(a) for a in delta_l]
 
-        
+            # print('\nact_vec')
+            # print(act_vec[-L-1])
+
+            der_b[-L] = delta_l
+            der_w[-L] = np.dot(delta_l, np.array(act_vec[-L-1]).transpose())
+        return (der_b, der_w)
 
     '''
     ----------------------------------------------
     The derivative of our cost function
     if the cost function is (a - y)^2
 
-    TODO: see if (out_acts-desired_out) is better
+    TODO: see if not multiplying by 2 is fine too
     '''
     def cost_prime(self, out_acts, desired_out):
-        return 2*(out_acts-desired_out)            
+        return 2*(out_acts-desired_out)
+    
+    '''
+    ----------------------------------------------
+    Returns the percentage of correct classifications
+    '''
+    def zero_one_loss(self):
 
-'''    
+        num_correct = 0
+        total = len(self.test_data)
+
+        if self.debug is True:
+            correctly_classified = []
+
+        for actual_out, desired_out in self.test_data:
+            if np.argmax(self.feed_forward(actual_out)) == desired_out:
+                num_correct += 1
+                if self.debug is True:
+                    correctly_classified.append((actual_out, desired_out))
+        
+        return (num_correct, total)
+        
+
+'''
 ----------------------------------------------
 w_dot_a_plus_b   A weighted sum which equals
                  the dot product of the weight vector (w)
                  and activation vector (a)
                  plus the bias vector (b)
 
-Vectorizes sigmoid over 
+Vectorizes sigmoid over
 Sigmoid in math notation: https://www.oreilly.com/library/view/hands-on-automated-machine/9781788629898/assets/1e81ffa6-1c5a-4d48-b88e-d01d4047f2ef.png
 '''
 def sig(w_dot_a_plus_b):

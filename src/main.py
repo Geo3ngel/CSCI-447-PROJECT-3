@@ -17,6 +17,7 @@ import save_state as ss
 import process_data
 import Cost_Functions as cf
 from rbf import RBF
+from FFNN import FFNN
 from knn import knn
 from kcluster import kcluster
 from path_manager import pathManager as path_manager
@@ -229,6 +230,50 @@ def main():
         #     else:
         #         print("Predicted value: ", val)
         #     print('-------------------------------------------')
+
+            # -------------------------------------------------------------
+            # FFNN stuff
+
+            # # BEGIN classification FFNN
+            # if db.get_dataset_type() == 'classification':
+
+            #     # print(db.get_data())
+
+            #     # BEGIN preprocessing
+            #     process_data.FFNN_encoding(db)
+
+            #     # (1) First layer (input layer) has 1 node per attribute.
+            #     # (2) Hidden layers has arbitrary number of nodes.
+            #     # (3) Output layer has 1 node per possible classification.
+                
+            #     layer_sizes = [
+            #         len(db.get_attr()) - 1,     # (1)
+            #         5, 5,                       # (2)
+            #         len(db.get_class_list())]   # (3)
+
+            #     # This number is arbitrary.
+            #     # TODO: Tune this per dataset
+            #     learning_rate = .02
+                
+            #     ffnn = FFNN(layer_sizes, db.get_dataset_type(), 
+            #         db.get_data(), db.get_classifier_col(),
+            #         learning_rate,
+            #         class_list=db.get_class_list())
+
+            # # BEGIN regression FFNN
+            # elif db.get_dataset_type() == 'regression':
+
+            #     # (1) First layer (input layer) has 1 node per attribute.
+            #     # (2) Hidden layers has arbitrary number of nodes.
+            #     # (3) Output layer has 1 node, just some real number.
+            #     layer_sizes = [
+            #         len(db.get_attr()), # (1)
+            #         5, 5,               # (2)
+            #         1                   # (3)
+            #     ]
+            
+            # else:
+            #     print('Database type invalid. Type = ' + db.get_dataset_type())
 
             
     

@@ -136,37 +136,84 @@ def data_correction(input_db, attribute_count):
     return input_db, correction_queue
 
 # One hot encoding function for giving numerical value representation for catagorical values.
-def one_hot_encode(data_column):
-    # make a set of the data column list (Then convert to list again to index, because lazy)
-    # Should honestly use a hash table, but eh, thats effort.
-    catagorical_val_set = list(set(data_column))
+# def one_hot_encode(data_column):
+#     # make a set of the data column list (Then convert to list again to index, because lazy)
+#     # Should honestly use a hash table, but eh, thats effort.
+#     catagorical_val_set = list(set(data_column))
     
-    # Build out one hot lists for each catcagorical value.
-    one_hot_set = []
-    for val in catagorical_val_set:
-        temp_list = [0] * len(catagorical_val_set)
-        temp_list[catagorical_val_set.index(val)] = 1
-        one_hot_set.append(temp_list)
+#     # Build out one hot lists for each catcagorical value.
+#     one_hot_set = []
+#     for val in catagorical_val_set:
+#         temp_list = [0] * len(catagorical_val_set)
+#         temp_list[catagorical_val_set.index(val)] = 1
+#         one_hot_set.append(temp_list)
     
-    one_hot_column = []
-    # Replace catagorical values with numerical indexes from the set
-    for data in data_column:
-        one_hot_column.append(one_hot_set[catagorical_val_set.index(data)])
+#     one_hot_column = []
+#     # Replace catagorical values with numerical indexes from the set
+#     for data in data_column:
+#         one_hot_column.append(one_hot_set[catagorical_val_set.index(data)])
         
-    return one_hot_column
+#     return one_hot_column
 
-# Integer encoder
-def integer_encode(data_column):
-    # make a set of the data column list (Then convert to list again to index, because lazy)
-    # Should honestly use a hash table, but eh, thats effort.
-    integer_set = list(set(data_column))
+# # Integer encoder
+# def integer_encode(data_column):
+#     # make a set of the data column list (Then convert to list again to index, because lazy)
+#     # Should honestly use a hash table, but eh, thats effort.
+#     #integer_set = list(set(data_column))
     
-    integer_column = []
-    # Replace catagorical values with numerical indexes from the set
-    for data in data_column:
-        integer_column.append(integer_set.index(data))
+#     integer_column = []
+#     # Replace catagorical values with numerical indexes from the set
+#     for data in data_column:
+#         integer_column.append(integer_set.index(data))
         
-    return integer_column
+#     return integer_column
+
+# Do the necessary encoding for the FFNN
+def FFNN_encoding(db):
+    print(db)
+
+    # Find which attributes are numbers
+    is_num = [True for attr in db.get_data()[0]]
+    for idx, attr in enumerate(db.get_data()[0]):
+        if is_num[idx] is True:
+            try:
+                temp = float(attr)
+            except ValueError:
+                is_num[idx] = False
+    
+    # Find all possible values of every categorical attribute
+    possible_vals = [[] for attr in db.get_data()[0]]
+    for ex in db.get_data():
+        for idx, attr in enumerate(ex):
+            if is_num[idx] is False or idx == db.get_classifier_col():
+                if attr not in possible_vals[idx]:
+                    possible_vals[idx].append(attr)
+    
+    # Sort the possible values so it's easier to read
+    possible_vals = [sorted(attr) if len(attr) != 0 else [] for attr in possible_vals]
+    
+    # One-hot encode the classifier attribute
+    # Store the possible classifer values
+    # Integer encode the non-classifier attributes
+    new_data = []
+    for ex in db.get_data():
+        new_ex = []
+        for ex_idx, attr in enumerate(ex):
+            if len(possible_vals[ex_idx]) == 0:
+                new_ex.append(attr)
+            else:
+                # One-hot encoding
+                if ex_idx == db.get_classifier_col():
+                    encode = [1 if attr == val else 0 for val in possible_vals[ex_idx]]
+                    new_ex.append(encode)
+                
+                # Integer encoding
+                else:
+                    new_ex.append(possible_vals[ex_idx].index(attr))
+        new_data.append(new_ex)
+    
+    db.set_data(new_data)
+    db.set_class_list(possible_vals[db.get_classifier_col()])
 
 # Finds any ambiguous/missing data and returns the rows of the relevant database in which missing parameters occur.
 def identify_missing_data(input_db):
