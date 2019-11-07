@@ -5,14 +5,12 @@ import pickle
 import os.path
 from Interface import Interface
 
-# TODO: Use the type of the object being loaded to determine how it is placed back into the project?
-
 # Basic Functions for loading json object
 
-# TODO: Replace filename with path, as it may be more relevant naming scheme?
-def load_state(state_filename):
+# Loads an object from a relevant file path
+def load_state(state_path):
     state = None
-    with open(state_filename, 'rb') as state_file:
+    with open(state_path, 'rb') as state_file:
         state = pickle.load(state_file)
         
     return state
