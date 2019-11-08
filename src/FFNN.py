@@ -10,6 +10,7 @@ import random
 import json
 import math
 import sys
+from time import gmtime, strftime
 from statistics import mean
 
 # ----------------------------------------------
@@ -31,19 +32,14 @@ class FFNN():
     in_layer_sizes    Contains the number of neurons
                       in the i-th layer
     '''
-    def __init__(self, layer_sizes, db_type,
-        data, desired_out_col, learning_rate, act_fn,
-        class_list=None, num_epochs=200, using_test_data=True, debug=True):
-
-        self.debug = debug
-
-        if self.debug is True:
-            print('FFNN: Enter __init__')
+    def __init__(self, layer_sizes, db_type, db_name,
+        data, learning_rate, num_epochs=200):
 
         # A list of integers representing
         # the number of nodes in layer i
         self.layer_sizes = layer_sizes
-        self.epochs = [[] for x in range(num_epochs)]
+        self.num_epochs = num_epochs
+        self.db_name = db_name
         self.db_type = db_type
         self.learning_rate = learning_rate
         self.data = data
@@ -59,9 +55,6 @@ class FFNN():
             print('Invalid database type. Quitting.')
             sys.exit()
 
-        if class_list:
-            self.class_list = class_list
-
         # Initializes weights via a normal distribution.
         self.weight_vec = [np.random.randn(y, x) / np.sqrt(x)
             for x, y in zip(layer_sizes[:-1], layer_sizes[1:])]
@@ -69,10 +62,12 @@ class FFNN():
         # Initializes biases via a normal distribution.
         self.bias_vec = [np.random.randn(x, 1) for x in self.layer_sizes[1:]]
 
+        print('-----------------------------------------------')
+        print('learning rate: ' + str(self.learning_rate))
+        print('layer sizes: ' + str(self.layer_sizes))
         self.grad_desc()
 
-    def one_times(self, x):
-        return x
+    
 
     '''
     ----------------------------------------------
@@ -100,15 +95,11 @@ class FFNN():
     '''
     def grad_desc(self, print_partial_progress=False):
 
-        # if self.debug is True:
-        #     print('FFNN: Enter grad_desc()')
-
         n_data = len(self.data)
-        n_epoch = len(self.epochs)
         len_batch = math.ceil(n_data / 10)
 
         # The gradient descent itself for every epoch
-        for e in range(n_epoch):
+        for e in range(self.num_epochs):
 
             # Randomly shuffle the training data
             random.shuffle(self.data)
@@ -140,22 +131,22 @@ class FFNN():
                     [b - (self.learning_rate / len_batch) * nb
                     for b, nb
                     in zip(self.bias_vec, new_bias)]
+
             # Print results of the epochs
-            if print_partial_progress is False:
-                if e == 0 or e == n_epoch - 1:
+            if self.db_type == 'classification':
+                if print_partial_progress is False:
+                    if e == 0 or e == self.num_epochs - 1:
+                        num_correct, total = self.zero_one_loss()
+                        print('Results of epoch {}: {} / {} correct'.format(e + 1, num_correct, total))
+                        self.start = num_correct
+                else:
                     num_correct, total = self.zero_one_loss()
-                    print('Epoch {}: {} / {}'.format(e, num_correct, total))
-            else:
-                num_correct, total = self.zero_one_loss()
-                print('Epoch {}: {} / {}'.format(e, num_correct, total))
-            
-            # print('\nself.weight_vec')
-            # print(self.weight_vec)
-            # print('\nself.bias_vec')
-            # print(np.array([[np.mean(a) for a in arr] for arr in self.bias_vec]))
-        
-
-
+                    print('Results of epoch {}: {} / {} correct'.format(e + 1, num_correct, total))
+                    self.end = num_correct
+            elif self.db_type == 'regression':
+                if e == 0 or e == self.num_epochs - 1:
+                    average_diff = self.regression_difference()
+                    print('Results of epoch {}: {}'.format(e, average_diff))
 
     '''
     ----------------------------------------------
@@ -176,6 +167,10 @@ class FFNN():
         # find every layer's pre-and-post-sigmoid activation vector
         for curr_b, curr_w in zip(self.bias_vec, self.weight_vec):
 
+            # print('\n\ncurr_w')
+            # print(curr_w)
+            # print('\n\nact')
+            # print(act)
             z = np.dot(curr_w, act) + curr_b
             z_vecs.append(z)
             act = (self.act_fn)(z)
@@ -185,14 +180,13 @@ class FFNN():
         # We need to do this first step at the last layer in
         # a particular way, so it goes outside of the loop
 
-        delta_l = self.cost_prime(act_vec[-1], desired_out) * (self.act_fn_prime)(z_vecs[-1])
+        delta_l = self.cost_prime(act_vec[-1], desired_out) * sig_prime(z_vecs[-1])
         der_b[-1] = delta_l
         der_w[-1] = np.dot(delta_l, act_vec[-2].transpose())
         for L in range(2, len(self.layer_sizes)):
 
             z = z_vecs[-L]
-            sp = (self.act_fn_prime)(z)
-            delta_l = np.dot(self.weight_vec[-L+1].transpose(), delta_l) * sp
+            delta_l = np.dot(self.weight_vec[-L+1].transpose(), delta_l) * sig_prime(z)
             der_b[-L] = delta_l
             der_w[-L] = np.dot(delta_l, act_vec[-L-1].transpose())
 
@@ -217,17 +211,18 @@ class FFNN():
         num_correct = 0
         total = len(self.old_data)
 
-        if self.debug is True:
-            correctly_classified = []
-
         for actual_out, desired_out in self.old_data:
             if np.argmax((self.feed_forward(actual_out))) == np.argmax(desired_out):
                 num_correct += 1
-                if self.debug is True:
-                    correctly_classified.append((actual_out, desired_out))
         
         return (num_correct, total)
-        
+    
+    def regression_difference(self):
+        distances = []
+
+        for actual_out, desired_out in self.old_data:
+            distances.append(abs(self.feed_forward(actual_out) - desired_out))
+        return np.mean(distances)
 
 '''
 ----------------------------------------------
@@ -248,3 +243,6 @@ The derivative of the sigmoid function
 '''
 def sig_prime(w_dot_a_plus_b):
     return sig(w_dot_a_plus_b) * (1 - sig(w_dot_a_plus_b))
+
+def one_times(x):
+    return x

@@ -9,6 +9,7 @@ from database import database as db
 import random
 import os
 import numpy as np
+import sys
 
 """ -------------------------------------------------------------
 @param  input_database  The database file (of type .data) to be processed
@@ -171,7 +172,6 @@ def data_correction(input_db, attribute_count):
 
 # Do the necessary encoding for the FFNN
 def FFNN_encoding(db):
-    print(db)
 
     # Find which attributes are numbers
     is_num = [True for attr in db.get_data()[0]]
@@ -182,11 +182,14 @@ def FFNN_encoding(db):
             except ValueError:
                 is_num[idx] = False
     
+    if db.get_dataset_type() == 'classification':
+        is_num[db.get_classifier_col()] = False
+    
     # Find all possible values of every categorical attribute
     possible_vals = [[] for attr in db.get_data()[0]]
     for ex in db.get_data():
         for idx, attr in enumerate(ex):
-            if is_num[idx] is False or idx == db.get_classifier_col():
+            if is_num[idx] is False:
                 if attr not in possible_vals[idx]:
                     possible_vals[idx].append(attr)
     
@@ -200,19 +203,22 @@ def FFNN_encoding(db):
     for ex in db.get_data():
         new_ex = []
         encode = []
-        for ex_idx, attr in enumerate(ex):
-            if len(possible_vals[ex_idx]) == 0:
-                new_ex.append(np.array([attr], dtype=np.float32))
+        for attr_idx, attr in enumerate(ex):
+            if len(possible_vals[attr_idx]) == 0:
+                if attr_idx == db.get_classifier_col():
+                    encode.append(np.array([attr], dtype=np.float32))
+                else:
+                    new_ex.append(np.array([attr], dtype=np.float32))
             else:
                 # One-hot encoding
-                if ex_idx == db.get_classifier_col():
-                    temp = np.asarray([1 if attr == val else 0 for val in possible_vals[ex_idx]])
-                    encode = np.zeros((len(possible_vals[ex_idx]), 1))
+                if attr_idx == db.get_classifier_col():
+                    temp = np.asarray([1 if attr == val else 0 for val in possible_vals[attr_idx]])
+                    encode = np.zeros((len(possible_vals[attr_idx]), 1))
                     encode[np.argmax(temp)] = 1
                 
                 # Integer encoding
                 else:
-                    new_ex.append(np.array([possible_vals[ex_idx].index(attr)], dtype=np.float32))
+                    new_ex.append(np.array([possible_vals[attr_idx].index(attr)], dtype=np.float32))
         new_data.append((np.asarray(new_ex), encode))
     
     db.set_data(new_data)

@@ -4,6 +4,8 @@
 @brief       The file that runs the program
 """
 
+import sys
+
 # -------------------------------------------------------------
 # Third-party imports
 
@@ -29,24 +31,24 @@ def select_db(databases):
         print("ERROR: No databases found!")
         return False
     chosen = False
-    db = ""
+    db_name = ""
     chosen_dbs = []
     # Selection loop for database
     while(not chosen):
         print("\nEnter one of the databases displayed, or 'all' to run for all avalible databases.:", databases)
-        db = input("Entry: ")
-        print("database:", db)
-        if db in databases:
-            print("Selected:", db)
-            chosen_dbs.append(db)
+        db_name = input("Entry: ")
+        print("database:", db_name)
+        if db_name in databases:
+            print("Selected:", db_name)
+            chosen_dbs.append(db_name)
             chosen = True
-        elif db.lower() == "all":
+        elif db_name.lower() == "all":
             print("Running for all Databases.")
             chosen_dbs = ["abalone", "car", "forestfires", "machine", "segmentation", "wine"]
             chosen = True
         else:
-            print(db, "is an invalid entry. Try again.")
-    return chosen_dbs
+            print(db_name, "is an invalid entry. Try again.")
+    return chosen_dbs, db_name
 
 
 # Set the path manager's current save folder to the current settings if it exists, or create it
@@ -274,42 +276,41 @@ def main():
             # FFNN stuff
 
             # BEGIN classification FFNN
-            if db.get_dataset_type() == 'classification':
+        if db.get_dataset_type() == 'classification':
 
-                # print(db.get_data())
-
-                # BEGIN preprocessing
-                process_data.FFNN_encoding(db)
+            # BEGIN preprocessing
+            process_data.FFNN_encoding(db)
 
                 # (1) First layer (input layer) has 1 node per attribute.
                 # (2) Hidden layers has arbitrary number of nodes.
                 # (3) Output layer has 1 node per possible classification.
                 
-                layer_sizes = [len(db.get_attr()), 30, len(db.get_class_list())]   # (3)
+            layer_sizes = [len(db.get_attr()), 10, len(db.get_class_list())]   # (3)
 
                 # This number is arbitrary.
                 # TODO: Tune this per dataset
-                learning_rate = 1.5
+            learning_rate = .5
                 
-                ffnn = FFNN(layer_sizes, db.get_dataset_type(), 
-                    db.get_data(), db.get_classifier_col(),
-                    learning_rate,
-                    class_list=db.get_class_list())
+            ffnn = FFNN(layer_sizes, db.get_dataset_type(), db_name,
+                db.get_data(), learning_rate)
 
             # BEGIN regression FFNN
-            elif db.get_dataset_type() == 'regression':
+        elif db.get_dataset_type() == 'regression':
+
+            process_data.FFNN_encoding(db)
 
                 # (1) First layer (input layer) has 1 node per attribute.
                 # (2) Hidden layers has arbitrary number of nodes.
                 # (3) Output layer has 1 node, just some real number.
-                layer_sizes = [
-                    len(db.get_attr()), # (1)
-                    5, 5,               # (2)
-                    1                   # (3)
-                ]
+            layer_sizes = [len(db.get_attr()) - 1, 5, 5, 1]
+
+            learning_rate = .0001
+
+            ffnn = FFNN(layer_sizes, db.get_dataset_type(), db_name,
+                db.get_data(), learning_rate)
             
-            else:
-                print('Database type invalid. Type = ' + db.get_dataset_type())
+        else:
+            print('Database type invalid. Type = ' + db.get_dataset_type())
 
             
     
