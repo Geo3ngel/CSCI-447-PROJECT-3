@@ -21,18 +21,12 @@ def find_mean_pt(centers):
     vars = [np.array(centers)[:,i].tolist() for i in range(len(centers[0]))]
     mean_pt = []
     for v in vars:
-        print("V: ", v)
-        # if v.dtype.type is np.str_:
         if type(v[0]) == str:
-            print("It's a string.")
             c = Counter(v)
             mean_pt.append(c.most_common(1)[0][0])
         else:
             mean_pt.append(np.mean(np.array(v)))
     return mean_pt
-    
-        
-            
 
 '''
 @param  c the centers
@@ -42,10 +36,9 @@ def std_dev(c):
     # d_max = max([cf.euc_dist(c1,c2) for c1 in c for c2 in c])
     # return d_max / np.sqrt(2 * len(c))
     mean = find_mean_pt(c)
-    print("MEAN POINT:")
-    print(mean)
     dists = [cf.euc_dist(mean, c1) for c1 in c]
     return sum(dists) / len(c)
+
 
 def cost_func(output_scores, F, y, type, classes=[]):
     if type == 'classification':
@@ -67,10 +60,19 @@ class RBF():
         self.k = k
         self.epochs = epochs
         # Initialize matrix of weights
-        self.weights = np.array([np.zeros(k) for i in range(o)])
+        self.weights = np.array([np.random.uniform(-0.1,0.1, k) for i in range(o)])
         self.learn_rate = 0.1
         self.alpha = 0.5
+        self.momentums = np.array([np.ones(k) for i in range(o)])
     
+    '''
+    @brief  update the momentum matrix for next 
+    '''
+    def update_momentum(self, errors, output_scores, activations):
+        for i in range(len(self.momentums.T)):
+            self.momentums.T[i] = self.learn_rate * -(errors * output_scores * (1 - errors)) *  + (self.alpha * self.momentums.T[i])
+
+
     '''
     @param activations      the array of activations for this datapoint
     @param output_scores    the array of output scores
@@ -85,26 +87,26 @@ class RBF():
             errors = correct_probs - output_scores
             # print("ERRORS: ", errors)
             # print("Output Scores: ", output_scores)
-            
             # print("WEIGHTS: ")
             # print(self.weights)
-            
-            # print("Errors: ", errors)
-            # for w,a in zip(self.weights.T, activations):
+            # print("MOMENTUMS: ")
+            # print(self.momentums)
+            self.update_momentum(errors, output_scores, activations)
             for i in range(len(self.weights.T)):
-                print("BEFORE WT: ")
-                print(self.weights.T)
-                self.weights.T[i] = self.weights.T[i] - self.learn_rate * errors * self.alpha * activations[i]
-                print("AFTER WT: ") 
-                print(self.weights.T)
+                # print("BEFORE WT: ")
+                # print(self.weights.T)
+                self.weights.T[i] = self.weights.T[i] - self.momentums.T[i]
+                # self.weights.T[i] = self.weights.T[i] - self.learn_rate * errors * self.alpha * activations[i]
+                # print("AFTER WT: ") 
+                # print(self.weights.T)
             
-            print("UPDATED WEIGHTS:") 
-            print(self.weights)
+            # print("UPDATED WEIGHTS:") 
+            # print(self.weights)
 
         else: # Type = regression
             error = y - F
-            for w in self.weights:
-                w = w - self.learn_rate * error * activations           
+            for i in range(len(self.weights)):
+                w = w - self.learn_rate * error * activations       
     
     '''
     @brief              Fit the model
@@ -116,40 +118,47 @@ class RBF():
     def fit(self, X, centers, y, type, classes=[]):
         # Compute standard deviations
         s = std_dev(centers)
-        print("STD DEV: ", s)
         
         for epoch in range(self.epochs):
             print("EPOCH: ", epoch)
             for i in range(len(X)):
-                print("POINT ", X[i])
                 # Build array of gaussians for each center
                 g = np.array([gaussian(X[i], c, s) for c in centers])
-                # print("GAUSSIANS:")
-                # print(g)
                 # Compute scores for each output node
                 output_scores = np.array([g.T.dot(self.weights[i]) for i in range(len(self.weights))])
-                print("OUTPUT SCORES: ")
-                print(output_scores)
+                # print("OUTPUT SCORES:")
+                # print(output_scores)
                 # Guess the class/regression value
                 F = max(output_scores) if type == 'regression' else np.argmax(output_scores)
-                print("F: ", F)
                 # Then do back prop
                 self.back_prop(g, output_scores, F, type, y[i], classes)
                 # print("WEIGHTS: ")
                 # print(self.weights)
                 cost = cost_func(output_scores, F, y[i], type, classes)
-                print("COST: ", cost)
-                
-            print('\n\n')
+                # print("COST: ", cost)
+            
+            self.test(X,type, y, centers, classes)
+            # print('\n\n')
 
             
-            
+    def test(self, X, type, y, centers, classes=[]):
+        print("TESTING:")
+        correct_guesses = 0
+        for i in range(len(X)):
+            # print("ROW: ", X[i])
+            guess = self.predict(X[i], type, centers)
+            # print("GUESS: ", classes[guess])
+            if classes[guess] == y[i]:
+                # print("CORRECT!")
+                correct_guesses += 1
+            # print("---------------------------")
+        print("GUESSES: ", correct_guesses, "/", len(X))
 
     def predict(self, x, type, centers):
         std_devs = get_std_devs(centers)
         g = np.array([gaussian(x, c, s) for c,s in zip(centers, std_devs)])
         output_scores = [g.T.dot(self.weights[i]) for i in range(len(self.weights))]
-        print("OUTPUT SCORES: ", output_scores)
+        # print(output_scores)
         if type == "classification":
             F = output_scores.index(max(output_scores))
         else:

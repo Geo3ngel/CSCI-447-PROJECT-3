@@ -139,7 +139,6 @@ def print_db(db):
             print(row)
 
 # -------------------------------------------------------------
-# import scipy.spatial.distance.pdist
 def main():
     pm = path_manager()
     selected_dbs = select_db(pm.find_folders(pm.get_databases_dir()))
@@ -149,23 +148,22 @@ def main():
         k_nn = knn(10, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
         classes = db.get_class_list() if db.get_dataset_type() == 'classification' else 1
         class_count = len(classes) if db.get_dataset_type() == 'classification' else 1
-        print("CLASSES: ", classes)
-        # X = process_data.shuffle_all(db.get_data(), 1)
+        X = process_data.shuffle_all(db.get_data(), 1)
         y = np.array(db.get_data())[:,db.get_classifier_col()]
             
         # ------------------------TEST CODE----------------------------
         
-        X = db.get_data()
-        centers = [X[1], X[10], X[21], X[32]]
-        print("CENTERS: ")
-        print(centers)
-        # print("DISTANCES: ", pdist(centers))
-        # print(sum(pdist(centers)))
+        # X = db.get_data()
+        # centers = [X[1], X[10], X[21], X[32]]
+        # print("CENTERS: ")
+        # print(centers)
+        # # print("DISTANCES: ", pdist(centers))
+        # # print(sum(pdist(centers)))
 
 
-        y = np.array(db.get_data())[:,db.get_classifier_col()]
-        rbf = RBF(len(centers), class_count, 2)
-        rbf.fit([X[0]], centers, y, db.get_dataset_type(), classes)
+        # y = np.array(db.get_data())[:,db.get_classifier_col()]
+        # rbf = RBF(len(centers), class_count, 2)
+        # rbf.fit([X[0]], centers, y, db.get_dataset_type(), classes)
         
 
         # -------------------------------------------------------------
@@ -174,16 +172,16 @@ def main():
 
 
         # RUN K-MEANS
-        # print("RUNNING K-MEANS")
-        # kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
-        # centers = kc.get_centroids()
-        # print("CENTERS: ")
-        # print(centers)
+        print("RUNNING K-MEANS")
+        kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
+        centers = kc.get_centroids()
+        print("CENTERS: ")
+        print(centers)
 
-        # rbf = RBF(len(centers), class_count, 10)
-        # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
-        # print("FINAL WEIGHTS:")
-        # print(rbf.weights)
+        rbf = RBF(len(centers), class_count)
+        print("INITIAL WEIGHTS: ", rbf.weights)
+        rbf.fit(X, centers, y, db.get_dataset_type(), classes)
+        # rbf.test(X, db.get_dataset_type(), y, centers, classes)
 
         #RUN K-MEDOIDS
         # print("RUNNING K-MEDOIDS")
@@ -195,8 +193,8 @@ def main():
 
         # rbf = RBF(len(centers), class_count)
         # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
-        # print("FINALS WEIGHTS:")
-        # print(rbf.weights)
+        print("FINALS WEIGHTS:")
+        print(rbf.weights)
 
 
 
