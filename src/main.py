@@ -142,92 +142,115 @@ def print_db(db):
 def main():
     pm = path_manager()
     selected_dbs = select_db(pm.find_folders(pm.get_databases_dir()))
-
+    
     for database in selected_dbs:
+        filename = "../output/knn/" + database + "_output.txt"
+        output_file = open(filename, "w+")
+
         db = prepare_db(database, pm)
-        k_nn = knn(10, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
-        classes = db.get_class_list() if db.get_dataset_type() == 'classification' else 1
+        k_nn = knn(5, db.get_dataset_type(), db.get_classifier_col(), db.get_classifier_attr_cols())
+        classes = db.get_class_list() if db.get_dataset_type() == 'classification' else []
         class_count = len(classes) if db.get_dataset_type() == 'classification' else 1
         X = process_data.shuffle_all(db.get_data(), 1)
         y = np.array(db.get_data())[:,db.get_classifier_col()]
             
         # ------------------------TEST CODE----------------------------
         
-        # X = db.get_data()
         # centers = [X[1], X[10], X[21], X[32]]
         # print("CENTERS: ")
         # print(centers)
-        # # print("DISTANCES: ", pdist(centers))
-        # # print(sum(pdist(centers)))
-
 
         # y = np.array(db.get_data())[:,db.get_classifier_col()]
-        # rbf = RBF(len(centers), class_count, 2)
-        # rbf.fit([X[0]], centers, y, db.get_dataset_type(), classes)
+        # rbf = RBF(len(centers), class_count, 20)
+        # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
         
 
         # -------------------------------------------------------------
 
 
-
-
         # RUN K-MEANS
-        print("RUNNING K-MEANS")
-        kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
-        centers = kc.get_centroids()
-        print("CENTERS: ")
-        print(centers)
+        # print("RUNNING K-MEANS")
+        # output_file.write("RUNNING K MEANS\n")
+        # kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
+        # centers = kc.get_centroids()
+        # for c in centers[:]:
+        #     print(c)
+        #     if len(c) == 0:
+        #         print("empty")
+        #         centers.remove(c)
+        
+        # print("CENTERS: \n")
+        # print(centers)
 
-        rbf = RBF(len(centers), class_count)
-        print("INITIAL WEIGHTS: ", rbf.weights)
-        rbf.fit(X, centers, y, db.get_dataset_type(), classes)
+        # rbf = RBF(len(centers), class_count, output_file)
+        # print("INITIAL WEIGHTS: ", rbf.weights)
+        # output_file.write("INITIAL WEIGHTS: \n")  
+        # output_file.write(str(rbf.weights) + "\n")
+        # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
+        # output_file.write("FINAL WEIGHTS: \n") 
+        # output_file.write(str(rbf.weights) + "\n")
+        # output_file.write("FINAL TESTS: \n")
         # rbf.test(X, db.get_dataset_type(), y, centers, classes)
 
-        #RUN K-MEDOIDS
+        # # RUN K-MEDOIDS
         # print("RUNNING K-MEDOIDS")
         # kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-medoids')
         # indices = kc.get_medoids()
         # centers = [db.get_data()[i] for i in indices]
-
-        # print("CENTERS: ", centers)
-
-        # rbf = RBF(len(centers), class_count)
+        # rbf = RBF(len(centers), class_count, output_file)
         # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
-        print("FINALS WEIGHTS:")
-        print(rbf.weights)
+        # print("INITIAL WEIGHTS: ", rbf.weights)
+        # output_file.write("INITIAL WEIGHTS: \n")  
+        # output_file.write(str(rbf.weights) + "\n")
+        # print("CENTERS: ", centers)
+        # output_file.write("FINAL WEIGHTS: \n") 
+        # output_file.write(str(rbf.weights) + "\n")
+        # output_file.write("FINAL TESTS: \n")
+        # rbf.test(X, db.get_dataset_type(), y, centers, classes)
+        # print("FINALS WEIGHTS:")
+        # print(rbf.weights)
 
 
 
         # Run CNN
-        # cnn = k_nn.condensed_nn(db.get_data())
-        
+        cnn = k_nn.condensed_nn(db.get_data())
+        print("CNN COUNT: ", len(cnn))
         # Run edited nearest neighbor
         # Training data, first 90%
-        # td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
+        td = db.get_data()[0:int(len(db.get_data()) * 0.9)]
         # Validation Data, last 10%
-        # vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
-        # enn = k_nn.edited_knn(td, vd)
-        
+        vd = db.get_data()[int(len(db.get_data()) * 0.9):len(db.get_data())]
+        enn = k_nn.edited_knn(td, vd)
+        print("ENN COUNT: ", len(enn))
         # Run data thru rbf net
-        # class_count = len(db.get_class_list()) if db.get_dataset_type() == 'classification' else 1 
-        # rbf = RBF(len(enn), class_count, 100)
-        
-        # Get column vector storing correct classifications of each row
-        # rbf.fit(X, enn, y, db.get_dataset_type(), db.get_class_list())
-        
-        # print("Final Weights: ")
-        # print(rbf.weights)
-        
-        # for i in range(10):
-        #     print("Current point:")
-        #     print(X[i])
-        #     print("Correct classification: ", X[i][db.get_classifier_col()])
-        #     val = rbf.predict(X[i], db.get_dataset_type(), enn)
-        #     if db.get_dataset_type() == 'classification':
-        #         print("Predicted class: ", db.get_class_list()[val])
-        #     else:
-        #         print("Predicted value: ", val)
-        #     print('-------------------------------------------')
+        class_count = len(db.get_class_list()) if db.get_dataset_type() == 'classification' else 1
+
+        if len(enn) < len(cnn):
+            print("RUNNING ENN")
+            output_file.write("RUNNING ENN \n")
+            centers = enn
+        else:
+            print("RUNNING CNN")
+            output_file.write("RUNNING CNN \n")
+            centers = cnn
+
+        print("CENTERS: ")
+        print(centers)
+
+        if len(centers) > 100:
+            centers = centers[0:50]
+
+        rbf = RBF(len(centers), class_count, output_file)
+        output_file.write("INITIAL WEIGHTS: \n")  
+        output_file.write(str(rbf.weights) + "\n")
+        rbf.fit(X, centers, y, db.get_dataset_type(), db.get_class_list())
+        print("FINAL TESTS: ")
+        output_file.write("FINAL TESTS: \n")
+        rbf.test(X, db.get_dataset_type(), y, centers, classes)
+        output_file.write("FINAL WEIGHTS: \n") 
+        output_file.write(str(rbf.weights) + "\n")
+        print("FINALS WEIGHTS:")
+        print(rbf.weights)
 
             # -------------------------------------------------------------
             # FFNN stuff
