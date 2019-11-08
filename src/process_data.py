@@ -8,6 +8,7 @@ TODO: Make this a Class, update UML
 from database import database as db
 import random
 import os
+import numpy as np
 
 """ -------------------------------------------------------------
 @param  input_database  The database file (of type .data) to be processed
@@ -198,19 +199,21 @@ def FFNN_encoding(db):
     new_data = []
     for ex in db.get_data():
         new_ex = []
+        encode = []
         for ex_idx, attr in enumerate(ex):
             if len(possible_vals[ex_idx]) == 0:
-                new_ex.append(attr)
+                new_ex.append(np.array([attr], dtype=np.float32))
             else:
                 # One-hot encoding
                 if ex_idx == db.get_classifier_col():
-                    encode = [1 if attr == val else 0 for val in possible_vals[ex_idx]]
-                    new_ex.append(encode)
+                    temp = np.asarray([1 if attr == val else 0 for val in possible_vals[ex_idx]])
+                    encode = np.zeros((len(possible_vals[ex_idx]), 1))
+                    encode[np.argmax(temp)] = 1
                 
                 # Integer encoding
                 else:
-                    new_ex.append(possible_vals[ex_idx].index(attr))
-        new_data.append(new_ex)
+                    new_ex.append(np.array([possible_vals[ex_idx].index(attr)], dtype=np.float32))
+        new_data.append((np.asarray(new_ex), encode))
     
     db.set_data(new_data)
     db.set_class_list(possible_vals[db.get_classifier_col()])
