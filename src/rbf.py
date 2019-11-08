@@ -66,8 +66,8 @@ class RBF():
         self.weights = np.array([np.random.uniform(-0.1,0.1, k) for i in range(o)])
         # Initialize matrix of momentums
         self.momentums = np.array([np.ones(k) for i in range(o)])
-        self.learn_rate = 0.01
-        self.alpha = 0.05
+        self.learn_rate = 0.001
+        self.alpha = 0.005
         self.output_file = output_file
     
     '''
@@ -124,6 +124,8 @@ class RBF():
                 self.back_prop(g, output_scores, F, type, y[i], classes)
                 cost = cost_func(output_scores, F, y[i], type, classes)
                 self.output_file.write("COST: " + str(cost) + "\n")
+                if np.isnan(cost):
+                    break
                 # print("COST: ", cost)
             
             self.test(X,type, y, centers, classes)
