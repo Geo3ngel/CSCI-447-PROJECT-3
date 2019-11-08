@@ -137,39 +137,6 @@ def data_correction(input_db, attribute_count):
             
     return input_db, correction_queue
 
-# One hot encoding function for giving numerical value representation for catagorical values.
-# def one_hot_encode(data_column):
-#     # make a set of the data column list (Then convert to list again to index, because lazy)
-#     # Should honestly use a hash table, but eh, thats effort.
-#     catagorical_val_set = list(set(data_column))
-    
-#     # Build out one hot lists for each catcagorical value.
-#     one_hot_set = []
-#     for val in catagorical_val_set:
-#         temp_list = [0] * len(catagorical_val_set)
-#         temp_list[catagorical_val_set.index(val)] = 1
-#         one_hot_set.append(temp_list)
-    
-#     one_hot_column = []
-#     # Replace catagorical values with numerical indexes from the set
-#     for data in data_column:
-#         one_hot_column.append(one_hot_set[catagorical_val_set.index(data)])
-        
-#     return one_hot_column
-
-# # Integer encoder
-# def integer_encode(data_column):
-#     # make a set of the data column list (Then convert to list again to index, because lazy)
-#     # Should honestly use a hash table, but eh, thats effort.
-#     #integer_set = list(set(data_column))
-    
-#     integer_column = []
-#     # Replace catagorical values with numerical indexes from the set
-#     for data in data_column:
-#         integer_column.append(integer_set.index(data))
-        
-#     return integer_column
-
 # Do the necessary encoding for the FFNN
 def FFNN_encoding(db):
 

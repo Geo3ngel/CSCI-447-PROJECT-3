@@ -160,8 +160,6 @@ class kcluster:
         # The sum of squared distances of examples x and y
         sum = 0
         
-        # For each
-        # (len(x) and len(y) are completely interchangable)
         for attr_idx in self.class_cols:
             # If the current attribute is continuous...
             if len(x) < attr_idx+1:
@@ -178,17 +176,6 @@ class kcluster:
 
         return math.sqrt(sum)
 
-    # """ ---------------------------------------------------
-    # TODO: add info
-    # """
-    # def update_centroid(self, centroid, n, examples_in_clust, discrete_attrs_vals):
-    #     print(examples_in_clust)
-    #     for attr_idx, attr in enumerate(centroid):
-    #         centroid[attr_idx] = \
-    #             (centroid[attr_idx] * (n-1) \
-    #             + examples_in_clust[attr_idx]) / float(n)
-        
-    #     return centroid
     
     """ ---------------------------------------------------
     TODO: add info
@@ -237,20 +224,6 @@ class kcluster:
         # while clusters_arent_empty is False:
         self.init_centroids(attr_mins, attr_maxs, discrete_attrs_vals)
         print("Inited centroids")
-        # clusters = [[] for i in range(len(self.get_centroids()[:]))]
-
-            # for ex_idx, ex in enumerate(self.get_db()[:]):
-            #     # Find which cluster we are in
-            #     cent_idx = self.assign_ex(ex, True)
-            #     clusters[cent_idx].append(ex)
-
-            # clusters_arent_empty = True
-            # for c in clusters:
-            #     if len(c) == 0:
-            #         clusters_arent_empty = False
-            # loop_count += 1
-            # if loop_count > 10:
-            #     self.fix_empty_clusters(clusters)
             
 
         # Holds the number of examples contained in each cluster
@@ -274,17 +247,6 @@ class kcluster:
                 # Find which cluster we are in
                 cent_idx = self.assign_ex(ex, True)
 
-                # size_of_clust[cent_idx] += 1
-
-                # centroids[cent_idx] = self.update_centroid( \
-                #     centroids[cent_idx], \
-                #     size_of_clust[cent_idx], \
-                #     db[curr_ex_idx], \
-                #     discrete_attrs_vals)
-                
-                # if (cent_idx != ex_to_clust[curr_ex_idx]):
-                #     centroids_were_changed = True
-                
                 ex_to_clust[ex_idx] = cent_idx
 
                 clusters[cent_idx].append(ex)
@@ -334,9 +296,6 @@ class kcluster:
 
                     new_centroids[cent_idx] = attr_avgs[:]
 
-            # if (centroids_were_changed is False):
-            #     break
-
             self.set_centroids(new_centroids)
         print('Finished Iterations')
 
@@ -351,10 +310,6 @@ class kcluster:
 
         # Create by value a local list of medoids
         medoids = self.get_medoids()[:]
-
-        # TODO: Remove if not needed
-        # Holds the number of examples contained in each cluster
-        # size_of_clust = [0 for i in range(self.get_k())]
 
         # Holds which cluster each example belongs to
         ex_to_clust = [-1 for i in range(len(self.get_db()))]
@@ -534,8 +489,7 @@ class kcluster:
     def get_kmedoids_clusters(self):
         return self.kmedoids_clusters
 
-    # ------------------------------------
-    # TODO: remove when databases work
+    # -----------------------------------
     # temp stuff until databases work
     def temp_data(self, fileName): 
   

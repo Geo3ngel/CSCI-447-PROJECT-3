@@ -66,7 +66,6 @@ class knn:
         return Counter(classes).most_common(1)[0][0]
 
     # Auxiliary function to get mean class for regression
-    # TODO: Implement regression function from lecture(?)
     def get_avg_class(self, neighbors):
         classes = [float(el[0]) for el in neighbors]
         return sum(classes) / len(classes)
@@ -80,8 +79,6 @@ class knn:
         min_dist = float("inf")
         min_point = None
         for point in z:
-            # if point[self.class_idx] == x[self.class_idx]:
-            #     continue
             dist = self.euclidean_distance(x, point)
             if dist < min_dist:
                 min_dist = dist
@@ -127,11 +124,7 @@ class knn:
         return neighbors
     
     def k_nearest_neighbors(self, training_data, test_point):
-        # print("TRAINING DATA:")
-        # for row in training_data:
-        #     print(row)
-        # print('------------------------------')
-
+        
         distances = []
         for point in training_data:
             if len(point) == 0:
@@ -170,16 +163,12 @@ class knn:
                 if predicted_class != correct_class:
                     # print('REMOVING POINT')
                     edited_data.remove(point)
-                # print('------------------------------------')
             # END FOR LOOP
             #Check performance at end of each scan
             past_performance = current_performance
             current_performance = self.get_performance(edited_data, validation_data)
-            # print("PAST PERFORMANCE:    ", past_performance)
-            # print("CURRENT PERFORMANCE: ", current_performance)
-            # print("LOOP COUNT: ", loop_count)
+            
             loop_count += 1
-            # print('--------------------------------------------')
             if current_performance < past_performance or loop_count >= 10:
                 performance_improving = False
         # END WHILE LOOP
