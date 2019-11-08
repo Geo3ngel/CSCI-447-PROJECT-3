@@ -167,9 +167,22 @@ def main():
         # rbf = RBF(len(centers), class_count, 20)
         # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
         
+            # # RUN K-MEANS
+            # print("RUNNING K-MEANS")
+            # kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-means')
+            # centers = kc.get_centroids()
 
         # -------------------------------------------------------------
+            # rbf = RBF(len(centers), class_count)
+            # rbf.fit(X, centers, y, db.get_dataset_type(), classes)
+            # print("FINAL WEIGHTS:")
+            # print(rbf.weights)
 
+            # #RUN K-MEDOIDS
+            # print("RUNNING K-MEDOIDS")
+            # kc = kcluster(10, 10, db.get_data(), db.get_classifier_attr_cols(), 'k-medoids')
+            # indices = kc.get_medoids()
+            # centers = [db.get_data()[i] for i in indices]
 
         # # RUN K-MEANS
         # print("RUNNING K-MEANS")
@@ -260,46 +273,43 @@ def main():
             # -------------------------------------------------------------
             # FFNN stuff
 
-            # # BEGIN classification FFNN
-            # if db.get_dataset_type() == 'classification':
+            # BEGIN classification FFNN
+            if db.get_dataset_type() == 'classification':
 
-            #     # print(db.get_data())
+                # print(db.get_data())
 
-            #     # BEGIN preprocessing
-            #     process_data.FFNN_encoding(db)
+                # BEGIN preprocessing
+                process_data.FFNN_encoding(db)
 
-            #     # (1) First layer (input layer) has 1 node per attribute.
-            #     # (2) Hidden layers has arbitrary number of nodes.
-            #     # (3) Output layer has 1 node per possible classification.
+                # (1) First layer (input layer) has 1 node per attribute.
+                # (2) Hidden layers has arbitrary number of nodes.
+                # (3) Output layer has 1 node per possible classification.
                 
-            #     layer_sizes = [
-            #         len(db.get_attr()) - 1,     # (1)
-            #         5, 5,                       # (2)
-            #         len(db.get_class_list())]   # (3)
+                layer_sizes = [len(db.get_attr()), 30, len(db.get_class_list())]   # (3)
 
-            #     # This number is arbitrary.
-            #     # TODO: Tune this per dataset
-            #     learning_rate = .02
+                # This number is arbitrary.
+                # TODO: Tune this per dataset
+                learning_rate = 1.5
                 
-            #     ffnn = FFNN(layer_sizes, db.get_dataset_type(), 
-            #         db.get_data(), db.get_classifier_col(),
-            #         learning_rate,
-            #         class_list=db.get_class_list())
+                ffnn = FFNN(layer_sizes, db.get_dataset_type(), 
+                    db.get_data(), db.get_classifier_col(),
+                    learning_rate,
+                    class_list=db.get_class_list())
 
-            # # BEGIN regression FFNN
-            # elif db.get_dataset_type() == 'regression':
+            # BEGIN regression FFNN
+            elif db.get_dataset_type() == 'regression':
 
-            #     # (1) First layer (input layer) has 1 node per attribute.
-            #     # (2) Hidden layers has arbitrary number of nodes.
-            #     # (3) Output layer has 1 node, just some real number.
-            #     layer_sizes = [
-            #         len(db.get_attr()), # (1)
-            #         5, 5,               # (2)
-            #         1                   # (3)
-            #     ]
+                # (1) First layer (input layer) has 1 node per attribute.
+                # (2) Hidden layers has arbitrary number of nodes.
+                # (3) Output layer has 1 node, just some real number.
+                layer_sizes = [
+                    len(db.get_attr()), # (1)
+                    5, 5,               # (2)
+                    1                   # (3)
+                ]
             
-            # else:
-            #     print('Database type invalid. Type = ' + db.get_dataset_type())
+            else:
+                print('Database type invalid. Type = ' + db.get_dataset_type())
 
             
     
