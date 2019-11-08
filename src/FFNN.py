@@ -1,4 +1,3 @@
-import sys
 '''
 ----------------------------------------------
 @file    ffnn.py
@@ -10,6 +9,7 @@ import sys
 import random
 import json
 import math
+import sys
 from statistics import mean
 
 # ----------------------------------------------
@@ -32,7 +32,7 @@ class FFNN():
                       in the i-th layer
     '''
     def __init__(self, layer_sizes, db_type,
-        data, desired_out_col, learning_rate,
+        data, desired_out_col, learning_rate, act_fn,
         class_list=None, num_epochs=200, using_test_data=True, debug=True):
 
         self.debug = debug
@@ -48,6 +48,17 @@ class FFNN():
         self.learning_rate = learning_rate
         self.data = data
         self.old_data = self.data[:]
+        
+        if db_type == 'classification':
+            self.act_fn = sig
+            self.act_fn_prime = sig_prime
+        elif db_type == 'regression':
+            self.act_fn = one_times
+            self.act_fn_prime = one_times
+        else:
+            print('Invalid database type. Quitting.')
+            sys.exit()
+
         if class_list:
             self.class_list = class_list
 
@@ -60,44 +71,8 @@ class FFNN():
 
         self.grad_desc()
 
-        print('\n\nEND WOOOOOO')
-
-    # '''
-    # ----------------------------------------------
-    # The counterpart to augment_data().
-    # This function is for when we want to test the neural net using
-    # test / training data. (To do this should be much slower.)
-    # '''
-    # def split_and_augment_data(self, data, desired_out_col):
-
-    #     if self.debug is True:
-    #         print('FFNN: Enter split_and_augment_data()')
-
-    #     random.shuffle(data)
-
-    #     temp = []
-    #     for ex in data:
-    #         desired = ex.pop(desired_out_col)
-    #         new_ex = [attr for idx, attr in enumerate(ex)
-    #             if idx != desired_out_col]
-    #         temp.append((new_ex, desired))
-
-    #     return temp
-
-    # '''
-    # ----------------------------------------------
-    # The counterpart to split_and_augment_data().
-    # This function is for when we want to only train the neural network,
-    # which should be faster than if we were to also test the
-    # trained neural network.
-    # '''
-
-    # def augment_data(self, data, desired_out_col):
-
-    #     if self.debug is True:
-    #         print('FFNN: Enter augment_data()')
-
-    #     return [(ex, ex[desired_out_col]) for ex in data]
+    def one_times(self, x):
+        return x
 
     '''
     ----------------------------------------------
@@ -107,7 +82,7 @@ class FFNN():
     '''
     def feed_forward(self, in_act_vec):
         for bias, weight in zip(self.bias_vec, self.weight_vec):
-            in_act_vec = sig(np.dot(weight, in_act_vec) + bias)
+            in_act_vec = (self.act_fn)(np.dot(weight, in_act_vec) + bias)
         return in_act_vec
 
     '''
@@ -203,34 +178,21 @@ class FFNN():
 
             z = np.dot(curr_w, act) + curr_b
             z_vecs.append(z)
-            act = sig(z)
+            act = (self.act_fn)(z)
             act_vec.append(act)
 
         # Notice this is the same as the "for layer_idx..." loop below.
         # We need to do this first step at the last layer in
         # a particular way, so it goes outside of the loop
 
-        delta_l = self.cost_prime(act_vec[-1], desired_out) * sig_prime(z_vecs[-1])
+        delta_l = self.cost_prime(act_vec[-1], desired_out) * (self.act_fn_prime)(z_vecs[-1])
         der_b[-1] = delta_l
         der_w[-1] = np.dot(delta_l, act_vec[-2].transpose())
         for L in range(2, len(self.layer_sizes)):
 
             z = z_vecs[-L]
-            sp = sig_prime(z)
-
-            #print('\n\nself.weight_vec[-L+1].transpose()')
-            #print(self.weight_vec[-L+1].transpose())
-            #print('\n\ndelta_l')
-            #print(delta_l)
-            #print('\n\nsp')
-            #print(sp)
-
-
+            sp = (self.act_fn_prime)(z)
             delta_l = np.dot(self.weight_vec[-L+1].transpose(), delta_l) * sp
-
-            #print('\n\nnew delta_l')
-            #print()
-
             der_b[-L] = delta_l
             der_w[-L] = np.dot(delta_l, act_vec[-L-1].transpose())
 
@@ -244,22 +206,7 @@ class FFNN():
     TODO: see if not multiplying by 2 is fine too
     '''
     def cost_prime(self, out_acts, desired_out):
-
-        # print('\nout_acts')
-        # print(out_acts)
-        # print('\nsig(out_acts)')
-        # print(sig(out_acts))
-        # print('\nnp.asarray([np.mean(arr) for arr in out_acts])')
-        # print(np.asarray([mean(arr) for arr in out_acts]))
-        # print('\ndesired_output')
-        # print(desired_out)
-        # print('\n[np.asarray(a) - desired_out[idx] for idx, a in enumerate(out_acts)]')
-        # print(np.asarray([np.asarray(a) - desired_out[idx] for idx, a in enumerate(out_acts)]))
-
-        # return np.asarray([np.asarray(a) - desired_out[idx] for idx, a in enumerate(out_acts)])
         return out_acts - desired_out
-        # return (sig(np.asarray([np.sum(arr) for arr in out_acts]))-desired_out)
-        # return (np.asarray([np.mean(arr) for arr in out_acts])-desired_out)
     
     '''
     ----------------------------------------------
